@@ -56,8 +56,7 @@ public class AuthService {
                 preparedStatement.setString(1, email);
                 preparedStatement.setString(2, password);
                 preparedStatement.setBoolean(3, true);
-                System.out.println("Statement: " + preparedStatement.toString());
-                preparedStatement.execute()
+                preparedStatement.execute();
                 JSONObject object = new JSONObject();
                 object.put("status", 201);
                 object.put("message", "User created");
