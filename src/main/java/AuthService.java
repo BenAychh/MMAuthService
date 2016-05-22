@@ -30,7 +30,6 @@ public class AuthService {
 
     private static Route create = new Route() {
         public Object handle(Request request, Response response) throws Exception {
-            System.out.println("Here?");
             String[] userDataArray = request.body().split("&");
             String[] emailPair = userDataArray[0].split("=");
             String[] passwordPair = userDataArray[1].split("=");
@@ -64,7 +63,6 @@ public class AuthService {
             resultSet.close();
             preparedStatement.close();
             connection.close();
-            System.out.println(object.toString());
             return object.toString();
         }
     };
