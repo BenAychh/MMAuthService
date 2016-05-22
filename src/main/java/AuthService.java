@@ -30,6 +30,7 @@ public class AuthService {
 
     private static Route create = new Route() {
         public Object handle(Request request, Response response) throws Exception {
+            System.out.println("Here?");
             String[] userDataArray = request.body().split("&");
             String[] emailPair = userDataArray[0].split("=");
             String[] passwordPair = userDataArray[1].split("=");
@@ -43,9 +44,9 @@ public class AuthService {
             ResultSet resultSet = preparedStatement.executeQuery();
             JSONObject object = new JSONObject();
             if (resultSet.next()) {
-                object.put("status", 400);
+                object.put("status", 409);
                 object.put("message", "User already exists");
-                response.status(400);
+                response.status(409);
                 response.type("application/json");
             } else {
                 query = "insert into users VALUES (?, ?, ?)";
@@ -63,6 +64,7 @@ public class AuthService {
             resultSet.close();
             preparedStatement.close();
             connection.close();
+            System.out.println(object.toString());
             return object.toString();
         }
     };
