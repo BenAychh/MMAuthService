@@ -26,6 +26,10 @@ public class AuthService {
         cpds.setJdbcUrl("jdbc:postgresql://localhost/Users");
         port(8080);
         post("/create", create);
+        get("*", error);
+        post("*", error);
+        put("*", error);
+        delete("*", error);
     }
 
     private static Route create = new Route() {
@@ -64,6 +68,19 @@ public class AuthService {
             preparedStatement.close();
             connection.close();
             return object.toString();
+        }
+    };
+
+    private static Route error = new Route() {
+        @Override
+        public Object handle(Request request, Response response) throws Exception {
+            JSONObject res = new JSONObject();
+            res.put("message", "error");
+            res.put("status", 404);
+            res.put("requested resource", request.pathInfo());
+            res.put("requested method", request.requestMethod());
+            response.status(404);
+            return res.toString();
         }
     };
 
