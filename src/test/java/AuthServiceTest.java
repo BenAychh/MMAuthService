@@ -18,12 +18,19 @@ import static org.junit.Assert.fail;
  * Created by benhernandez on 5/21/16.
  */
 public class AuthServiceTest {
+    /**
+     * Starts our AuthService to test against.
+     */
     @BeforeClass
     public static void beforeAll() {
         String[] args = {};
         AuthService.main(args);
     }
 
+    /**
+     * Wipes out the user database (start clean for each test).
+     * @throws SQLException if we have trouble hitting database.
+     */
     @Before
     public void beforeEach() throws SQLException {
         Connection connection = DriverManager.getConnection("jdbc:postgresql://localhost/Users");
@@ -146,7 +153,7 @@ public class AuthServiceTest {
     }
 
     @Test
-    public void testRead() throws Exception {
+    public void testReadUserExists() throws Exception {
         Webb webb = Webb.create();
         Request request = webb
                 .post("http://localhost:8080/create")
@@ -172,6 +179,52 @@ public class AuthServiceTest {
             expected.put("token", "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0ZXN0QHRlc3QuY29tIn0.egbaJ7yWUvC4mU_C7LNJi24cPNpfx3rlr7woWn9pqsGX6LrGCK2Rf2LaD2cFiJ4AWC93QDMChuCmUM4YtDjzAw");
             JSONAssert.assertEquals(expected, result, true);
             assertEquals(200, response.getStatusCode());
+        } else {
+            fail("Unable to even create the user");
+        }
+
+    }
+
+    @Test
+    public void testReadUserDoesNotExist() throws Exception {
+        Webb webb = Webb.create();
+        Request request = webb
+                .post("http://localhost:8080/read")
+                .param("email", "doesnotexist@something.com")
+                .param("password", "password");
+        Response<JSONObject> response = request
+                .asJsonObject();
+        JSONObject result = new JSONObject(response.getErrorBody().toString());
+        JSONObject expected = new JSONObject();
+        expected.put("message", "Bad username or password");
+        expected.put("status", 401);
+        JSONAssert.assertEquals(expected, result, true);
+        assertEquals(401, response.getStatusCode());
+    }
+
+    @Test
+    public void testReadBadPassword() throws Exception {
+        Webb webb = Webb.create();
+        Request request = webb
+                .post("http://localhost:8080/create")
+                .param("email", "test@test.com")
+                .param("password", "password");
+        Response<JSONObject> response = request
+                .asJsonObject();
+        JSONObject result = response.getBody();
+        if (result != null) {
+            request = webb
+                    .post("http://localhost:8080/read")
+                    .param("email", "test@test.com")
+                    .param("password", "wrongPassword");
+            response = request
+                    .asJsonObject();
+            result = new JSONObject(response.getErrorBody().toString());
+            JSONObject expected = new JSONObject();
+            expected.put("message", "Bad username or password");
+            expected.put("status", 401);
+            JSONAssert.assertEquals(expected, result, true);
+            assertEquals(401, response.getStatusCode());
         } else {
             fail("Unable to even create the user");
         }
