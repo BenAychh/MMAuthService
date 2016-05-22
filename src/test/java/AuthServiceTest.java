@@ -42,11 +42,11 @@ public class AuthServiceTest {
         Response<JSONObject> response = request
                 .asJsonObject();
         JSONObject result = new JSONObject(response.getErrorBody().toString());
-        System.out.println(result);
         JSONObject expected = new JSONObject();
         expected.put("message", "error");
         expected.put("status", 404);
         expected.put("requested resource", "/doesnotexist");
+        expected.put("requested method", "GET");
         JSONAssert.assertEquals(expected, result, true);
     }
 
@@ -54,15 +54,47 @@ public class AuthServiceTest {
     public void test404Post() throws Exception {
         Webb webb = Webb.create();
         Request request = webb
-                .get("http://localhost:8080/doesnotexist");
+                .post("http://localhost:8080/doesnotexist");
         Response<JSONObject> response = request
                 .asJsonObject();
         JSONObject result = new JSONObject(response.getErrorBody().toString());
-        System.out.println(result);
         JSONObject expected = new JSONObject();
         expected.put("message", "error");
         expected.put("status", 404);
         expected.put("requested resource", "/doesnotexist");
+        expected.put("requested method", "POST");
+        JSONAssert.assertEquals(expected, result, true);
+    }
+
+    @Test
+    public void test404Put() throws Exception {
+        Webb webb = Webb.create();
+        Request request = webb
+                .put("http://localhost:8080/doesnotexist");
+        Response<JSONObject> response = request
+                .asJsonObject();
+        JSONObject result = new JSONObject(response.getErrorBody().toString());
+        JSONObject expected = new JSONObject();
+        expected.put("message", "error");
+        expected.put("status", 404);
+        expected.put("requested resource", "/doesnotexist");
+        expected.put("requested method", "PUT");
+        JSONAssert.assertEquals(expected, result, true);
+    }
+
+    @Test
+    public void test404Delete() throws Exception {
+        Webb webb = Webb.create();
+        Request request = webb
+                .delete("http://localhost:8080/doesnotexist");
+        Response<JSONObject> response = request
+                .asJsonObject();
+        JSONObject result = new JSONObject(response.getErrorBody().toString());
+        JSONObject expected = new JSONObject();
+        expected.put("message", "error");
+        expected.put("status", 404);
+        expected.put("requested resource", "/doesnotexist");
+        expected.put("requested method", "DELETE");
         JSONAssert.assertEquals(expected, result, true);
     }
 
