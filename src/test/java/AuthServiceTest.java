@@ -253,15 +253,14 @@ public class AuthServiceTest {
             response = request
                     .asJsonObject();
             result = response.getBody();
-            System.out.println(result);
             if (result == null) {
                 result = new JSONObject(response.getErrorBody().toString());
             }
             JSONObject expected = new JSONObject();
             expected.put("message", "User password updated");
-            expected.put("status", 204);
+            expected.put("status", 202);
             JSONAssert.assertEquals(expected, result, true);
-            assertEquals(204, response.getStatusCode());
+            assertEquals(202, response.getStatusCode());
         } else {
             fail("Unable to even create the user");
         }
@@ -310,7 +309,7 @@ public class AuthServiceTest {
         JSONObject result = response.getBody();
         if (result != null) {
             request = webb
-                    .delete("http://localhost:8080/delete")
+                    .post("http://localhost:8080/deactivate")
                     .param("email", "doesnotexist@something.com");
             response = request
                     .asJsonObject();
@@ -340,7 +339,7 @@ public class AuthServiceTest {
         JSONObject result = response.getBody();
         if (result != null) {
             request = webb
-                    .delete("http://localhost:8080/delete")
+                    .post("http://localhost:8080/deactivate")
                     .param("email", "test@test.com");
             response = request
                     .asJsonObject();
@@ -370,7 +369,7 @@ public class AuthServiceTest {
         JSONObject result = response.getBody();
         if (result != null) {
             request = webb
-                    .delete("http://localhost:8080/delete")
+                    .post("http://localhost:8080/deactivate")
                     .param("email", "test@test.com");
             response = request
                     .asJsonObject();
@@ -379,10 +378,13 @@ public class AuthServiceTest {
                 result = new JSONObject(response.getErrorBody().toString());
             }
             request = webb
-                    .delete("http://localhost:8080/delete")
+                    .post("http://localhost:8080/deactivate")
                     .param("email", "test@test.com");
             response = request.asJsonObject();
             result = response.getBody();
+            if (result == null) {
+                result = new JSONObject(response.getErrorBody().toString());
+            }
             JSONObject expected = new JSONObject();
             expected.put("message", "User is already inactive");
             expected.put("status", 409);
@@ -440,6 +442,7 @@ public class AuthServiceTest {
             response = request
                     .asJsonObject();
             result = response.getBody();
+            System.out.println(response.getErrorBody().toString());
             if (result == null) {
                 result = new JSONObject(response.getErrorBody().toString());
             }
@@ -465,7 +468,7 @@ public class AuthServiceTest {
         JSONObject result = response.getBody();
         if (result != null) {
             request = webb
-                    .delete("http://localhost:8080/delete")
+                    .post("http://localhost:8080/deactivate")
                     .param("email", "test@test.com");
             response = request
                     .asJsonObject();
@@ -478,11 +481,14 @@ public class AuthServiceTest {
                     .param("email", "test@test.com");
             response = request.asJsonObject();
             result = response.getBody();
+            if (result == null) {
+                result = new JSONObject(response.getErrorBody().toString());
+            }
             JSONObject expected = new JSONObject();
             expected.put("message", "User's active status set to true");
-            expected.put("status", 204);
+            expected.put("status", 202);
             JSONAssert.assertEquals(expected, result, true);
-            assertEquals(204, response.getStatusCode());
+            assertEquals(202, response.getStatusCode());
         } else {
             fail("Unable to even create the user");
         }

@@ -29,7 +29,7 @@ public class AuthService {
         post("/create", create);
         post("/read", read);
         put("/update", update);
-        delete("/delete", delete);
+        post("/deactivate", deactivate);
         put("/activate", activate);
         get("*", error);
         post("*", error);
@@ -140,10 +140,10 @@ public class AuthService {
                 preparedStatement = connection.prepareStatement(query);
                 preparedStatement.setString(1, password);
                 preparedStatement.setString(2, email);
-                preparedStatement.executeQuery();
-                object.put("status", 204);
+                preparedStatement.execute();
+                object.put("status", 202);
                 object.put("message", "User password updated");
-                response.status(204);
+                response.status(202);
                 response.type("application/json");
             }
             resultSet.close();
@@ -155,14 +155,10 @@ public class AuthService {
 
     private static Route activate = new Route() {
         public Object handle(Request request, Response response) throws Exception {
-            String[] userDataArray = request.body().split("&");
-            String[] emailPair = userDataArray[0].split("=");
-            String[] passwordPair = userDataArray[1].split("=");
-            String email = URLDecoder.decode(emailPair[1], "UTF-8");
-            String password = URLDecoder.decode(passwordPair[1], "UTF-8");
-            password = BCrypt.hashpw(password, BCrypt.gensalt(10));
+            String[] userData = request.body().split("=");
+            String email = URLDecoder.decode(userData[1], "UTF-8");
             Connection connection = cpds.getConnection();
-            String query = "select email from users where email = ?;";
+            String query = "select active from users where email = ?;";
             PreparedStatement preparedStatement = connection.prepareStatement(query);
             preparedStatement.setString(1, email);
             ResultSet resultSet = preparedStatement.executeQuery();
@@ -172,20 +168,20 @@ public class AuthService {
                 object.put("message", "User does not exist");
                 response.status(403);
                 response.type("application/json");
-            } else if (resultSet.getBoolean("active") == true) {
-            object.put("status", 409);
-            object.put("message", "User is already active");
-            response.status(409);
-            response.type("application/json");
+            } else if (resultSet.getBoolean(1) == true) {
+                object.put("status", 409);
+                object.put("message", "User is already active");
+                response.status(409);
+                response.type("application/json");
             } else {
                 query = "update users set active = ? where email = ?;";
                 preparedStatement = connection.prepareStatement(query);
                 preparedStatement.setBoolean(1, true);
                 preparedStatement.setString(2, email);
-                preparedStatement.executeQuery();
-                object.put("status", 204);
+                preparedStatement.execute();
+                object.put("status", 202);
                 object.put("message", "User's active status set to true");
-                response.status(204);
+                response.status(202);
                 response.type("application/json");
             }
             resultSet.close();
@@ -195,12 +191,12 @@ public class AuthService {
         }
     };
 
-    private static Route delete = new Route() {
+    private static Route deactivate = new Route() {
         public Object handle(Request request, Response response) throws Exception {
             String[] userData = request.body().split("=");
             String email = URLDecoder.decode(userData[1], "UTF-8");
             Connection connection = cpds.getConnection();
-            String query = "select email, active from users where email = ?;";
+            String query = "select active from users where email = ?;";
             PreparedStatement preparedStatement = connection.prepareStatement(query);
             preparedStatement.setString(1, email);
             ResultSet resultSet = preparedStatement.executeQuery();
@@ -210,7 +206,7 @@ public class AuthService {
                 object.put("message", "User does not exist");
                 response.status(403);
                 response.type("application/json");
-            } else if (resultSet.getBoolean("active") == false) {
+            } else if (resultSet.getBoolean(1) == false) {
                 object.put("status", 409);
                 object.put("message", "User is already inactive");
                 response.status(409);
@@ -220,7 +216,7 @@ public class AuthService {
                 preparedStatement = connection.prepareStatement(query);
                 preparedStatement.setBoolean(1, false);
                 preparedStatement.setString(2, email);
-                preparedStatement.executeQuery();
+                preparedStatement.execute();
                 object.put("status", 202);
                 object.put("message", "User's active status set to false");
                 response.status(202);
