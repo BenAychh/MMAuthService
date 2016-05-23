@@ -9,4 +9,3 @@ RUN ["mvn", "dependency:resolve"]
 ADD src /home/user/src
 
 EXPOSE 8000
-RUN ["mvn", "package"]
