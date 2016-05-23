@@ -5,6 +5,7 @@
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.SignatureException;
 import org.json.JSONObject;
 import org.mindrot.jbcrypt.BCrypt;
 import spark.Request;
@@ -103,6 +104,43 @@ public class AuthService {
                     response.status(202);
                     response.type("application/json");
                 }
+            }
+            resultSet.close();
+            preparedStatement.close();
+            connection.close();
+            return object.toString();
+        }
+    };
+
+    private static Route update = new Route() {
+        public Object handle(Request request, Response response) throws Exception {
+            String[] userDataArray = request.body().split("&");
+            String[] emailPair = userDataArray[0].split("=");
+            String[] passwordPair = userDataArray[1].split("=");
+            String email = URLDecoder.decode(emailPair[1], "UTF-8");
+            String password = URLDecoder.decode(passwordPair[1], "UTF-8");
+            Connection connection = cpds.getConnection();
+            String query = "select email from users where email = ?;";
+            PreparedStatement preparedStatement = connection.prepareStatement(query);
+            preparedStatement.setString(1, email);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            preparedStatement.close();
+            JSONObject object = new JSONObject();
+            if (!resultSet.next()) {
+                object.put("status", 403);
+                object.put("message", "User does not exist");
+                response.status(403);
+                response.type("application/json");
+            } else {
+                query = "update users set password = ? where email = ?";
+                preparedStatement = connection.prepareStatement(query);
+                preparedStatement.setString(1, password);
+                preparedStatement.setString(2, email);
+                preparedStatement.executeQuery();
+                object.put("status", 204);
+                object.put("message", "User password updated");
+                response.status(204);
+                response.type("application/json");
             }
             resultSet.close();
             preparedStatement.close();
