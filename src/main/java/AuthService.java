@@ -122,6 +122,7 @@ public class AuthService {
             String[] passwordPair = userDataArray[1].split("=");
             String email = URLDecoder.decode(emailPair[1], "UTF-8");
             String password = URLDecoder.decode(passwordPair[1], "UTF-8");
+            password = BCrypt.hashpw(password, BCrypt.gensalt(10));
             Connection connection = cpds.getConnection();
             String query = "select email from users where email = ?;";
             PreparedStatement preparedStatement = connection.prepareStatement(query);
