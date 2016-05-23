@@ -25,7 +25,7 @@ public class AuthService {
     public static void main(String args[]) {
         cpds = new ComboPooledDataSource();
         cpds.setJdbcUrl("jdbc:postgresql://localhost/Users");
-        port(8080);
+        port(8000);
         post("/create", create);
         post("/login", login);
         put("/update", update);
