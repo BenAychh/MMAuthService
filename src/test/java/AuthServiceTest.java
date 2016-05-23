@@ -38,7 +38,15 @@ public class AuthServiceTest {
      */
     @Before
     public void beforeEach() throws SQLException {
-        Connection connection = DriverManager.getConnection("jdbc:postgresql://localhost/Users");
+        String host = System.getenv("$PG_PORT_5432_TCP_ADDR");
+        String port = System.getenv("$PG_PORT_5432_TCP_PORT");
+        if (host = null) {
+            host = "localhost";
+        }
+        if (port = null) {
+            port = "5432";
+        }
+        Connection connection = DriverManager.getConnection("jdbc:postgresql://" + host + ":" + port + "/Users?user=postgres");
         Statement statement = connection.createStatement();
         String query = "delete from users";
         statement.execute(query);
