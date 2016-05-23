@@ -178,7 +178,7 @@ public class AuthServiceTest {
             expected.put("status", 200);
             expected.put("token", "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0ZXN0QHRlc3QuY29tIn0.egbaJ7yWUvC4mU_C7LNJi24cPNpfx3rlr7woWn9pqsGX6LrGCK2Rf2LaD2cFiJ4AWC93QDMChuCmUM4YtDjzAw");
             JSONAssert.assertEquals(expected, result, true);
-            assertEquals(200, response.getStatusCode());
+            assertEquals(202, response.getStatusCode());
         } else {
             fail("Unable to even create the user");
         }
@@ -197,7 +197,7 @@ public class AuthServiceTest {
         JSONObject result = new JSONObject(response.getErrorBody().toString());
         JSONObject expected = new JSONObject();
         expected.put("message", "Bad username or password");
-        expected.put("status", 401);
+        expected.put("status", 403);
         JSONAssert.assertEquals(expected, result, true);
         assertEquals(401, response.getStatusCode());
     }
@@ -224,10 +224,81 @@ public class AuthServiceTest {
             expected.put("message", "Bad username or password");
             expected.put("status", 401);
             JSONAssert.assertEquals(expected, result, true);
-            assertEquals(401, response.getStatusCode());
+            assertEquals(403, response.getStatusCode());
         } else {
             fail("Unable to even create the user");
         }
+    }
+
+    @Test
+    public void existingUserUpdatesPassword() throws Exception {
+        Webb webb = Webb.create();
+        Request request = webb
+                .post("http://localhost:8080/create")
+                .param("email", "test@test.com")
+                .param("password", "password");
+        Response<JSONObject> response = request
+                .asJsonObject();
+        JSONObject result = response.getBody();
+        if (result != null) {
+            request = webb
+                    .put("http://localhost:8080/update")
+                    .param("email", "test@test.com")
+                    .param("password", "newpassword");
+            response = request
+                    .asJsonObject();
+            result = response.getBody();
+            if (result == null) {
+                result = new JSONObject(response.getErrorBody().toString());
+            }
+            JSONObject expected = new JSONObject();
+            expected.put("message", "User does not exist");
+            expected.put("status", 403);
+            JSONAssert.assertEquals(expected, result, true);
+            assertEquals(204, response.getStatusCode());
+        } else {
+            fail("Unable to even create the user");
+        }
+    }
+
+    @Test
+    public void updateNonExistingUserReturnsErrorMessage() throws Exception {
+        Webb webb = Webb.create();
+        Request request = webb
+                .post("http://localhost:8080/create")
+                .param("email", "test@test.com")
+                .param("password", "password");
+        Response<JSONObject> response = request
+                .asJsonObject();
+        JSONObject result = response.getBody();
+        if (result != null) {
+            request = webb
+                    .put("http://localhost:8080/update")
+                    .param("email", "doesnotexist@something.com")
+                    .param("password", "newpassword");
+            response = request
+                    .asJsonObject();
+            result = response.getBody();
+            if (result == null) {
+                result = new JSONObject(response.getErrorBody().toString());
+            }
+            JSONObject expected = new JSONObject();
+            expected.put("message", "User does not exist");
+            expected.put("status", 403);
+            JSONAssert.assertEquals(expected, result, true);
+            assertEquals(403, response.getStatusCode());
+        } else {
+            fail("Unable to even create the user");
+        }
+    }
+
+    @Test
+    public void deleteNonExistingUserReturnsErrorMessage() throws Exception {
+
+    }
+
+    @Test
+    public void deleteExistingUserSetsActiveStatusToFalse() throws Exception {
 
     }
 }
