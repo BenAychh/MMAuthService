@@ -30,6 +30,7 @@ public class AuthService {
         post("/read", read);
         put("/update", update);
         delete("/delete", delete);
+        put("/activate", activate);
         get("*", error);
         post("*", error);
         put("*", error);
@@ -128,7 +129,6 @@ public class AuthService {
             PreparedStatement preparedStatement = connection.prepareStatement(query);
             preparedStatement.setString(1, email);
             ResultSet resultSet = preparedStatement.executeQuery();
-            preparedStatement.close();
             JSONObject object = new JSONObject();
             if (!resultSet.next()) {
                 object.put("status", 403);
@@ -166,7 +166,6 @@ public class AuthService {
             PreparedStatement preparedStatement = connection.prepareStatement(query);
             preparedStatement.setString(1, email);
             ResultSet resultSet = preparedStatement.executeQuery();
-            preparedStatement.close();
             JSONObject object = new JSONObject();
             if (!resultSet.next()) {
                 object.put("status", 403);
@@ -205,7 +204,6 @@ public class AuthService {
             PreparedStatement preparedStatement = connection.prepareStatement(query);
             preparedStatement.setString(1, email);
             ResultSet resultSet = preparedStatement.executeQuery();
-            preparedStatement.close();
             JSONObject object = new JSONObject();
             if (!resultSet.next()) {
                 object.put("status", 403);
