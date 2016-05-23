@@ -424,7 +424,7 @@ public class AuthServiceTest {
     }
 
     @Test
-    public void activeExistingUserSetsActiveStatusToTrue() throws Exception {
+    public void activateActiveUserReturnsErrorMessage() throws Exception {
         Webb webb = Webb.create();
         Request request = webb
                 .post("http://localhost:8080/create")
@@ -454,7 +454,7 @@ public class AuthServiceTest {
     }
 
     @Test
-    public void activateInactiveUserReturnsError() throws Exception {
+    public void activateInactiveUserActivatesUser() throws Exception {
         Webb webb = Webb.create();
         Request request = webb
                 .post("http://localhost:8080/create")
