@@ -40,10 +40,10 @@ public class AuthServiceTest {
     public void beforeEach() throws SQLException {
         String host = System.getenv("$PG_PORT_5432_TCP_ADDR");
         String port = System.getenv("$PG_PORT_5432_TCP_PORT");
-        if (host = null) {
+        if (host == null) {
             host = "localhost";
         }
-        if (port = null) {
+        if (port == null) {
             port = "5432";
         }
         Connection connection = DriverManager.getConnection("jdbc:postgresql://" + host + ":" + port + "/Users?user=postgres");
