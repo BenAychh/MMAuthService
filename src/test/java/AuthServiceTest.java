@@ -23,6 +23,28 @@ public class AuthServiceTest {
      */
     @BeforeClass
     public static void beforeAll() {
+        String host = System.getenv("PG_PORT_5432_TCP_ADDR");
+        String port = System.getenv("PG_PORT_5432_TCP_PORT");
+        System.out.println("Host: " + host);
+        System.out.println("Port: " + port);
+        if (host == null) {
+            host = "localhost";
+        }
+        if (port == null) {
+            port = "5432";
+        }
+        Connection connection = DriverManager.getConnection("jdbc:postgresql://" + host + ":" + port + "/Users?user=postgres");
+        Statement statement = connection.createStatement();
+        String query = "CREATE TABLE public.users\n" +
+                "(\n" +
+                "  email character varying NOT NULL,\n" +
+                "  password character varying,\n" +
+                "  active boolean DEFAULT false,\n" +
+                "  CONSTRAINT users_pkey PRIMARY KEY (email)\n" +
+                ")";
+        statement.execute(query);
+        statement.close();
+        connection.close();
         String[] args = {};
         AuthService.main(args);
         try {
