@@ -9,5 +9,3 @@ RUN ["mvn", "dependency:resolve"];
 ADD src /home/user/src
 
 EXPOSE 8000
-
-CMD ["java", "-jar", "target/AuthService-1.0-SNAPSHOT.jar"]
