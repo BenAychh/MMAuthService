@@ -294,11 +294,96 @@ public class AuthServiceTest {
 
     @Test
     public void deleteNonExistingUserReturnsErrorMessage() throws Exception {
-
+        Webb webb = Webb.create();
+        Request request = webb
+                .post("http://localhost:8080/create")
+                .param("email", "test@test.com")
+                .param("password", "password");
+        Response<JSONObject> response = request
+                .asJsonObject();
+        JSONObject result = response.getBody();
+        if (result != null) {
+            request = webb
+                    .delete("http://localhost:8080/delete")
+                    .param("email", "doesnotexist@something.com");
+            response = request
+                    .asJsonObject();
+            result = response.getBody();
+            if (result == null) {
+                result = new JSONObject(response.getErrorBody().toString());
+            }
+            JSONObject expected = new JSONObject();
+            expected.put("message", "User does not exist");
+            expected.put("status", 403);
+            JSONAssert.assertEquals(expected, result, true);
+            assertEquals(403, response.getStatusCode());
+        } else {
+            fail("Unable to even create the user");
+        }
     }
 
     @Test
     public void deleteExistingUserSetsActiveStatusToFalse() throws Exception {
+        Webb webb = Webb.create();
+        Request request = webb
+                .post("http://localhost:8080/create")
+                .param("email", "test@test.com")
+                .param("password", "password");
+        Response<JSONObject> response = request
+                .asJsonObject();
+        JSONObject result = response.getBody();
+        if (result != null) {
+            request = webb
+                    .delete("http://localhost:8080/delete")
+                    .param("email", "test@test.com");
+            response = request
+                    .asJsonObject();
+            result = response.getBody();
+            if (result == null) {
+                result = new JSONObject(response.getErrorBody().toString());
+            }
+            JSONObject expected = new JSONObject();
+            expected.put("message", "User's active status set to false");
+            expected.put("status", 202);
+            JSONAssert.assertEquals(expected, result, true);
+            assertEquals(202, response.getStatusCode());
+        } else {
+            fail("Unable to even create the user");
+        }
+    }
 
+    @Test
+    public void deleteInactiveUserReturnsError() throws Exception {
+        Webb webb = Webb.create();
+        Request request = webb
+                .post("http://localhost:8080/create")
+                .param("email", "test@test.com")
+                .param("password", "password");
+        Response<JSONObject> response = request
+                .asJsonObject();
+        JSONObject result = response.getBody();
+        if (result != null) {
+            request = webb
+                    .delete("http://localhost:8080/delete")
+                    .param("email", "test@test.com");
+            response = request
+                    .asJsonObject();
+            result = response.getBody();
+            if (result == null) {
+                result = new JSONObject(response.getErrorBody().toString());
+            }
+            request = webb
+                    .delete("http://localhost:8080/delete")
+                    .param("email", "test@test.com");
+            response = request.asJsonObject();
+            result = response.getBody();
+            JSONObject expected = new JSONObject();
+            expected.put("message", "User is already inactive");
+            expected.put("status", 409);
+            JSONAssert.assertEquals(expected, result, true);
+            assertEquals(409, response.getStatusCode());
+        } else {
+            fail("Unable to even create the user");
+        }
     }
 }
