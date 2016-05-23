@@ -4,8 +4,9 @@ ENV MAVEN_VERSION 3.3.9
 
 WORKDIR "/home/user"
 ADD pom.xml /home/user/pom.xml
-RUN ["mvn", "dependency:resolve"];
+RUN ["mvn", "dependency:resolve"]
 
 ADD src /home/user/src
 
 EXPOSE 8000
+RUN ["mvn", "package"]
