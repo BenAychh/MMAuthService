@@ -71,6 +71,46 @@ public class AuthService {
         }
     };
 
+    private static Route read = new Route() {
+        public Object handle(Request request, Response response) throws Exception {
+            String[] userDataArray = request.body().split("&");
+            String[] emailPair = userDataArray[0].split("=");
+            String[] passwordPair = userDataArray[1].split("=");
+            String email = URLDecoder.decode(emailPair[1], "UTF-8");
+            String password = URLDecoder.decode(passwordPair[1], "UTF-8");
+            Connection connection = cpds.getConnection();
+            String query = "select email, password from users where email = ?;";
+            PreparedStatement preparedStatement = connection.prepareStatement(query);
+            preparedStatement.setString(1, email);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            JSONObject object = new JSONObject();
+            if (!resultSet.next()) {
+                object.put("status", 403);
+                object.put("message", "Incorrect username or password");
+                response.status(403);
+                response.type("application/json");
+            } else {
+                String hashedPassword = resultSet.getString("password");
+                if (!BCrypt.checkpw(password, hashedPassword)) {
+                    object.put("status", 403);
+                    object.put("message", "Incorrect username or password");
+                    response.status(403);
+                    response.type("application/json");
+                } else {
+                    object.put("status", 202);
+                    object.put("message", "User found and password matches");
+                    object.put("token", createJWT(email));
+                    response.status(202);
+                    response.type("application/json");
+                }
+            }
+            resultSet.close();
+            preparedStatement.close();
+            connection.close();
+            return object.toString();
+        }
+    };
+
     private static Route error = new Route() {
         @Override
         public Object handle(Request request, Response response) throws Exception {
