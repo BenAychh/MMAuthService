@@ -169,7 +169,7 @@ public class AuthServiceTest {
         JSONObject result = response.getBody();
         if (result != null) {
             request = webb
-                    .post("http://localhost:8080/read")
+                    .post("http://localhost:8080/login")
                     .param("email", "test@test.com")
                     .param("password", "password");
             response = request
@@ -194,7 +194,7 @@ public class AuthServiceTest {
     public void testReadUserDoesNotExist() throws Exception {
         Webb webb = Webb.create();
         Request request = webb
-                .post("http://localhost:8080/read")
+                .post("http://localhost:8080/login")
                 .param("email", "doesnotexist@something.com")
                 .param("password", "password");
         Response<JSONObject> response = request
@@ -219,7 +219,7 @@ public class AuthServiceTest {
         JSONObject result = response.getBody();
         if (result != null) {
             request = webb
-                    .post("http://localhost:8080/read")
+                    .post("http://localhost:8080/login")
                     .param("email", "test@test.com")
                     .param("password", "wrongPassword");
             response = request
@@ -309,7 +309,7 @@ public class AuthServiceTest {
         JSONObject result = response.getBody();
         if (result != null) {
             request = webb
-                    .post("http://localhost:8080/deactivate")
+                    .put("http://localhost:8080/deactivate")
                     .param("email", "doesnotexist@something.com");
             response = request
                     .asJsonObject();
@@ -339,7 +339,7 @@ public class AuthServiceTest {
         JSONObject result = response.getBody();
         if (result != null) {
             request = webb
-                    .post("http://localhost:8080/deactivate")
+                    .put("http://localhost:8080/deactivate")
                     .param("email", "test@test.com");
             response = request
                     .asJsonObject();
@@ -369,7 +369,7 @@ public class AuthServiceTest {
         JSONObject result = response.getBody();
         if (result != null) {
             request = webb
-                    .post("http://localhost:8080/deactivate")
+                    .put("http://localhost:8080/deactivate")
                     .param("email", "test@test.com");
             response = request
                     .asJsonObject();
@@ -378,7 +378,7 @@ public class AuthServiceTest {
                 result = new JSONObject(response.getErrorBody().toString());
             }
             request = webb
-                    .post("http://localhost:8080/deactivate")
+                    .put("http://localhost:8080/deactivate")
                     .param("email", "test@test.com");
             response = request.asJsonObject();
             result = response.getBody();
@@ -468,7 +468,7 @@ public class AuthServiceTest {
         JSONObject result = response.getBody();
         if (result != null) {
             request = webb
-                    .post("http://localhost:8080/deactivate")
+                    .put("http://localhost:8080/deactivate")
                     .param("email", "test@test.com");
             response = request
                     .asJsonObject();

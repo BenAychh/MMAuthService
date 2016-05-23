@@ -27,9 +27,9 @@ public class AuthService {
         cpds.setJdbcUrl("jdbc:postgresql://localhost/Users");
         port(8080);
         post("/create", create);
-        post("/read", read);
+        post("/login", login);
         put("/update", update);
-        post("/deactivate", deactivate);
+        put("/deactivate", deactivate);
         put("/activate", activate);
         get("*", error);
         post("*", error);
@@ -76,7 +76,7 @@ public class AuthService {
         }
     };
 
-    private static Route read = new Route() {
+    private static Route login = new Route() {
         public Object handle(Request request, Response response) throws Exception {
             String[] userDataArray = request.body().split("&");
             String[] emailPair = userDataArray[0].split("=");
