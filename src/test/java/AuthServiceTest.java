@@ -25,8 +25,6 @@ public class AuthServiceTest {
     public static void beforeAll() throws SQLException{
         String host = System.getenv("PG_PORT_5432_TCP_ADDR");
         String port = System.getenv("PG_PORT_5432_TCP_PORT");
-        System.out.println("Host: " + host);
-        System.out.println("Port: " + port);
         if (host == null) {
             host = "localhost";
         }
@@ -62,8 +60,6 @@ public class AuthServiceTest {
     public void beforeEach() throws SQLException {
         String host = System.getenv("PG_PORT_5432_TCP_ADDR");
         String port = System.getenv("PG_PORT_5432_TCP_PORT");
-        System.out.println("Host: " + host);
-        System.out.println("Port: " + port);
         if (host == null) {
             host = "localhost";
         }
