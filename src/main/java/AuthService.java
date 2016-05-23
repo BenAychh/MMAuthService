@@ -90,14 +90,14 @@ public class AuthService {
             JSONObject object = new JSONObject();
             if (!resultSet.next()) {
                 object.put("status", 403);
-                object.put("message", "Incorrect username or password");
+                object.put("message", "Bad username or password");
                 response.status(403);
                 response.type("application/json");
             } else {
                 String hashedPassword = resultSet.getString("password");
                 if (!BCrypt.checkpw(password, hashedPassword)) {
                     object.put("status", 403);
-                    object.put("message", "Incorrect username or password");
+                    object.put("message", "Bad username or password");
                     response.status(403);
                     response.type("application/json");
                 } else {
