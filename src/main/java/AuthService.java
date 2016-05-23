@@ -24,8 +24,8 @@ public class AuthService {
     private static ComboPooledDataSource cpds;
     public static void main(String args[]) {
         cpds = new ComboPooledDataSource();
-        String host = System.getenv("$PG_PORT_5432_TCP_ADDR");
-        String port = System.getenv("$PG_PORT_5432_TCP_PORT");
+        String host = System.getenv("PG_PORT_5432_TCP_ADDR");
+        String port = System.getenv("PG_PORT_5432_TCP_PORT");
         if (host == null) {
             host = "localhost";
         }
