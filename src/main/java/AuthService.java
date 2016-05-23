@@ -132,7 +132,7 @@ public class AuthService {
                 response.status(403);
                 response.type("application/json");
             } else {
-                query = "update users set password = ? where email = ?";
+                query = "update users set password = ? where email = ?;";
                 preparedStatement = connection.prepareStatement(query);
                 preparedStatement.setString(1, password);
                 preparedStatement.setString(2, email);
@@ -140,6 +140,39 @@ public class AuthService {
                 object.put("status", 204);
                 object.put("message", "User password updated");
                 response.status(204);
+                response.type("application/json");
+            }
+            resultSet.close();
+            preparedStatement.close();
+            connection.close();
+            return object.toString();
+        }
+    };
+
+    private static Route delete = new Route() {
+        public Object handle(Request request, Response response) throws Exception {
+            String[] userData = request.body().split("=");
+            String email = URLDecoder.decode(userData[1], "UTF-8");
+            Connection connection = cpds.getConnection();
+            String query = "select email from users where email = ?;";
+            PreparedStatement preparedStatement = connection.prepareStatement(query);
+            preparedStatement.setString(1, email);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            preparedStatement.close();
+            JSONObject object = new JSONObject();
+            if (!resultSet.next()) {
+                object.put("status", 409);
+                object.put("message", "User is already deleted");
+                response.status(409);
+                response.type("application/json");
+            } else {
+                query = "delete from users where email = ?;";
+                preparedStatement = connection.prepareStatement(query);
+                preparedStatement.setString(1, email);
+                preparedStatement.executeQuery();
+                object.put("status", 202);
+                object.put("message", "User deleted");
+                response.status(202);
                 response.type("application/json");
             }
             resultSet.close();
