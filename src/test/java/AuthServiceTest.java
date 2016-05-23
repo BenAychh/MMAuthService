@@ -22,7 +22,7 @@ public class AuthServiceTest {
      * Starts our AuthService to test against.
      */
     @BeforeClass
-    public static void beforeAll() {
+    public static void beforeAll() throws SQLException{
         String host = System.getenv("PG_PORT_5432_TCP_ADDR");
         String port = System.getenv("PG_PORT_5432_TCP_PORT");
         System.out.println("Host: " + host);
