@@ -27,6 +27,9 @@ public class AuthService {
         cpds.setJdbcUrl("jdbc:postgresql://localhost/Users");
         port(8080);
         post("/create", create);
+        post("/read", read);
+        put("/update", update);
+        delete("/delete", delete);
         get("*", error);
         post("*", error);
         put("*", error);
@@ -166,12 +169,13 @@ public class AuthService {
                 response.status(409);
                 response.type("application/json");
             } else {
-                query = "delete from users where email = ?;";
+                query = "update users set active = ? where email = ?;";
                 preparedStatement = connection.prepareStatement(query);
-                preparedStatement.setString(1, email);
+                preparedStatement.setBoolean(1, false);
+                preparedStatement.setString(2, email);
                 preparedStatement.executeQuery();
                 object.put("status", 202);
-                object.put("message", "User deleted");
+                object.put("message", "User's active status set to false");
                 response.status(202);
                 response.type("application/json");
             }
