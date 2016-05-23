@@ -25,6 +25,11 @@ public class AuthServiceTest {
     public static void beforeAll() {
         String[] args = {};
         AuthService.main(args);
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -106,7 +111,7 @@ public class AuthServiceTest {
     }
 
     @Test
-    public void testCreateValidUser()  throws Exception {
+    public void testCreateValidUser() throws Exception {
         Webb webb = Webb.create();
         Request request = webb
                 .post("http://localhost:8080/create")
@@ -174,8 +179,8 @@ public class AuthServiceTest {
                 result = new JSONObject(response.getErrorBody().toString());
             }
             JSONObject expected = new JSONObject();
-            expected.put("message", "Logged in");
-            expected.put("status", 200);
+            expected.put("message", "User found and password matches");
+            expected.put("status", 202);
             expected.put("token", "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0ZXN0QHRlc3QuY29tIn0.egbaJ7yWUvC4mU_C7LNJi24cPNpfx3rlr7woWn9pqsGX6LrGCK2Rf2LaD2cFiJ4AWC93QDMChuCmUM4YtDjzAw");
             JSONAssert.assertEquals(expected, result, true);
             assertEquals(202, response.getStatusCode());
@@ -199,7 +204,7 @@ public class AuthServiceTest {
         expected.put("message", "Bad username or password");
         expected.put("status", 403);
         JSONAssert.assertEquals(expected, result, true);
-        assertEquals(401, response.getStatusCode());
+        assertEquals(403, response.getStatusCode());
     }
 
     @Test
@@ -222,7 +227,7 @@ public class AuthServiceTest {
             result = new JSONObject(response.getErrorBody().toString());
             JSONObject expected = new JSONObject();
             expected.put("message", "Bad username or password");
-            expected.put("status", 401);
+            expected.put("status", 403);
             JSONAssert.assertEquals(expected, result, true);
             assertEquals(403, response.getStatusCode());
         } else {
@@ -248,12 +253,13 @@ public class AuthServiceTest {
             response = request
                     .asJsonObject();
             result = response.getBody();
+            System.out.println(result);
             if (result == null) {
                 result = new JSONObject(response.getErrorBody().toString());
             }
             JSONObject expected = new JSONObject();
-            expected.put("message", "User does not exist");
-            expected.put("status", 403);
+            expected.put("message", "User password updated");
+            expected.put("status", 204);
             JSONAssert.assertEquals(expected, result, true);
             assertEquals(204, response.getStatusCode());
         } else {
