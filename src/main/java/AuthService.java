@@ -185,7 +185,7 @@ public class AuthService {
                 preparedStatement.setString(2, email);
                 preparedStatement.executeQuery();
                 object.put("status", 204);
-                object.put("message", "User active status is true");
+                object.put("message", "User's active status set to true");
                 response.status(204);
                 response.type("application/json");
             }
