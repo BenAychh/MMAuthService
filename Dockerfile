@@ -7,8 +7,7 @@ ADD pom.xml /home/user/pom.xml
 RUN ["mvn", "dependency:resolve"];
 
 ADD src /home/user/src
-RUN ["mvn", "package"]
 
-EXPOSE 8080
+EXPOSE 8000
 
-CMD ["java", "-jar", "target/AuthService-1.0-SNAPSHOT.jar"]  
+CMD ["java", "-jar", "target/AuthService-1.0-SNAPSHOT.jar"]
