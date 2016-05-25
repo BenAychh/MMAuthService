@@ -47,11 +47,9 @@ public class AuthService {
 
     private static Route create = new Route() {
         public Object handle(Request request, Response response) throws Exception {
-            String[] userDataArray = request.body().split("&");
-            String[] emailPair = userDataArray[0].split("=");
-            String[] passwordPair = userDataArray[1].split("=");
-            String email = URLDecoder.decode(emailPair[1], "UTF-8");
-            String password = URLDecoder.decode(passwordPair[1], "UTF-8");
+            JSONObject userInfo = new JSONObject(request.body());
+            String email = userInfo.getString("email");
+            String password = userInfo.getString("password");
             password = BCrypt.hashpw(password, BCrypt.gensalt(10));
             Connection connection = cpds.getConnection();
             String query = "select email from users where email = ?;";
@@ -86,16 +84,17 @@ public class AuthService {
 
     private static Route login = new Route() {
         public Object handle(Request request, Response response) throws Exception {
-            String[] userDataArray = request.body().split("&");
-            String[] emailPair = userDataArray[0].split("=");
-            String[] passwordPair = userDataArray[1].split("=");
-            String email = URLDecoder.decode(emailPair[1], "UTF-8");
-            String password = URLDecoder.decode(passwordPair[1], "UTF-8");
+            JSONObject userInfo = new JSONObject(request.body());
+            String email = userInfo.getString("email");
+            System.out.println(email);
+            String password = userInfo.getString("password");
+            System.out.println(password);
             Connection connection = cpds.getConnection();
             String query = "select email, password from users where email = ?;";
             PreparedStatement preparedStatement = connection.prepareStatement(query);
             preparedStatement.setString(1, email);
             ResultSet resultSet = preparedStatement.executeQuery();
+            System.out.println(resultSet);
             JSONObject object = new JSONObject();
             if (!resultSet.next()) {
                 object.put("status", 403);
@@ -126,11 +125,9 @@ public class AuthService {
 
     private static Route update = new Route() {
         public Object handle(Request request, Response response) throws Exception {
-            String[] userDataArray = request.body().split("&");
-            String[] emailPair = userDataArray[0].split("=");
-            String[] passwordPair = userDataArray[1].split("=");
-            String email = URLDecoder.decode(emailPair[1], "UTF-8");
-            String password = URLDecoder.decode(passwordPair[1], "UTF-8");
+            JSONObject userInfo = new JSONObject(request.body());
+            String email = userInfo.getString("email");
+            String password = userInfo.getString("password");
             password = BCrypt.hashpw(password, BCrypt.gensalt(10));
             Connection connection = cpds.getConnection();
             String query = "select email from users where email = ?;";
@@ -163,8 +160,8 @@ public class AuthService {
 
     private static Route activate = new Route() {
         public Object handle(Request request, Response response) throws Exception {
-            String[] userData = request.body().split("=");
-            String email = URLDecoder.decode(userData[1], "UTF-8");
+            JSONObject userInfo = new JSONObject(request.body());
+            String email = userInfo.getString("email");
             Connection connection = cpds.getConnection();
             String query = "select active from users where email = ?;";
             PreparedStatement preparedStatement = connection.prepareStatement(query);
@@ -201,8 +198,8 @@ public class AuthService {
 
     private static Route deactivate = new Route() {
         public Object handle(Request request, Response response) throws Exception {
-            String[] userData = request.body().split("=");
-            String email = URLDecoder.decode(userData[1], "UTF-8");
+            JSONObject userInfo = new JSONObject(request.body());
+            String email = userInfo.getString("email");
             Connection connection = cpds.getConnection();
             String query = "select active from users where email = ?;";
             PreparedStatement preparedStatement = connection.prepareStatement(query);
