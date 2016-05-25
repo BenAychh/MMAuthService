@@ -184,9 +184,9 @@ public class AuthServiceTest {
             result = new JSONObject(response.getErrorBody().toString());
             JSONObject expected = new JSONObject();
             expected.put("message", "User already exists");
-            expected.put("status", 409);
+            expected.put("status", 400);
             JSONAssert.assertEquals(expected, result, true);
-            assertEquals(409, response.getStatusCode());
+            assertEquals(400, response.getStatusCode());
         }
     }
 
@@ -214,10 +214,10 @@ public class AuthServiceTest {
             }
             JSONObject expected = new JSONObject();
             expected.put("message", "User found and password matches");
-            expected.put("status", 202);
+            expected.put("status", 200);
             expected.put("token", "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0ZXN0QHRlc3QuY29tIn0.egbaJ7yWUvC4mU_C7LNJi24cPNpfx3rlr7woWn9pqsGX6LrGCK2Rf2LaD2cFiJ4AWC93QDMChuCmUM4YtDjzAw");
             JSONAssert.assertEquals(expected, result, true);
-            assertEquals(202, response.getStatusCode());
+            assertEquals(200, response.getStatusCode());
         } else {
             fail("Unable to even create the user");
         }
@@ -300,9 +300,9 @@ public class AuthServiceTest {
             }
             JSONObject expected = new JSONObject();
             expected.put("message", "User password updated");
-            expected.put("status", 202);
+            expected.put("status", 200);
             JSONAssert.assertEquals(expected, result, true);
-            assertEquals(202, response.getStatusCode());
+            assertEquals(200, response.getStatusCode());
         } else {
             fail("Unable to even create the user");
         }
@@ -401,10 +401,10 @@ public class AuthServiceTest {
                 result = new JSONObject(response.getErrorBody().toString());
             }
             JSONObject expected = new JSONObject();
-            expected.put("message", "User's active status set to false");
-            expected.put("status", 202);
+            expected.put("message", "Account deactivated");
+            expected.put("status", 200);
             JSONAssert.assertEquals(expected, result, true);
-            assertEquals(202, response.getStatusCode());
+            assertEquals(200, response.getStatusCode());
         } else {
             fail("Unable to even create the user");
         }
@@ -442,7 +442,7 @@ public class AuthServiceTest {
                 result = new JSONObject(response.getErrorBody().toString());
             }
             JSONObject expected = new JSONObject();
-            expected.put("message", "User is already inactive");
+            expected.put("message", "Already deactivated");
             expected.put("status", 409);
             JSONAssert.assertEquals(expected, result, true);
             assertEquals(409, response.getStatusCode());
@@ -511,10 +511,10 @@ public class AuthServiceTest {
                 result = new JSONObject(response.getErrorBody().toString());
             }
             JSONObject expected = new JSONObject();
-            expected.put("message", "User is already active");
-            expected.put("status", 409);
+            expected.put("message", "Already activated");
+            expected.put("status", 400);
             JSONAssert.assertEquals(expected, result, true);
-            assertEquals(409, response.getStatusCode());
+            assertEquals(400, response.getStatusCode());
         } else {
             fail("Unable to even create the user");
         }
@@ -552,10 +552,10 @@ public class AuthServiceTest {
                 result = new JSONObject(response.getErrorBody().toString());
             }
             JSONObject expected = new JSONObject();
-            expected.put("message", "User's active status set to true");
-            expected.put("status", 202);
+            expected.put("message", "Account activated");
+            expected.put("status", 200);
             JSONAssert.assertEquals(expected, result, true);
-            assertEquals(202, response.getStatusCode());
+            assertEquals(200, response.getStatusCode());
         } else {
             fail("Unable to even create the user");
         }

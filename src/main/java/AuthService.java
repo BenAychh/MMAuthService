@@ -58,9 +58,9 @@ public class AuthService {
             ResultSet resultSet = preparedStatement.executeQuery();
             JSONObject object = new JSONObject();
             if (resultSet.next()) {
-                object.put("status", 409);
+                object.put("status", 400);
                 object.put("message", "User already exists");
-                response.status(409);
+                response.status(400);
                 response.type("application/json");
             } else {
                 query = "insert into users VALUES (?, ?, ?)";
@@ -109,10 +109,10 @@ public class AuthService {
                     response.status(403);
                     response.type("application/json");
                 } else {
-                    object.put("status", 202);
+                    object.put("status", 200);
                     object.put("message", "User found and password matches");
                     object.put("token", createJWT(email));
-                    response.status(202);
+                    response.status(200);
                     response.type("application/json");
                 }
             }
@@ -146,9 +146,9 @@ public class AuthService {
                 preparedStatement.setString(1, password);
                 preparedStatement.setString(2, email);
                 preparedStatement.execute();
-                object.put("status", 202);
+                object.put("status", 200);
                 object.put("message", "User password updated");
-                response.status(202);
+                response.status(200);
                 response.type("application/json");
             }
             resultSet.close();
@@ -174,9 +174,9 @@ public class AuthService {
                 response.status(403);
                 response.type("application/json");
             } else if (resultSet.getBoolean(1) == true) {
-                object.put("status", 409);
+                object.put("status", 400);
                 object.put("message", "User is already active");
-                response.status(409);
+                response.status(400);
                 response.type("application/json");
             } else {
                 query = "update users set active = ? where email = ?;";
@@ -184,9 +184,9 @@ public class AuthService {
                 preparedStatement.setBoolean(1, true);
                 preparedStatement.setString(2, email);
                 preparedStatement.execute();
-                object.put("status", 202);
+                object.put("status", 200);
                 object.put("message", "User's active status set to true");
-                response.status(202);
+                response.status(200);
                 response.type("application/json");
             }
             resultSet.close();
@@ -212,9 +212,9 @@ public class AuthService {
                 response.status(403);
                 response.type("application/json");
             } else if (resultSet.getBoolean(1) == false) {
-                object.put("status", 409);
+                object.put("status", 400);
                 object.put("message", "User is already inactive");
-                response.status(409);
+                response.status(400);
                 response.type("application/json");
             } else {
                 query = "update users set active = ? where email = ?;";
@@ -222,9 +222,9 @@ public class AuthService {
                 preparedStatement.setBoolean(1, false);
                 preparedStatement.setString(2, email);
                 preparedStatement.execute();
-                object.put("status", 202);
+                object.put("status", 200);
                 object.put("message", "User's active status set to false");
-                response.status(202);
+                response.status(200);
                 response.type("application/json");
             }
             resultSet.close();
