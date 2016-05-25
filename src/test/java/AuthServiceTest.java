@@ -205,8 +205,7 @@ public class AuthServiceTest {
         if (result != null) {
             request = webb
                     .post("http://localhost:8000/login")
-                    .param("email", "test@test.com")
-                    .param("password", "password");
+                    .body(obj);
             response = request
                     .asJsonObject();
             result = response.getBody();
@@ -357,6 +356,8 @@ public class AuthServiceTest {
         JSONObject result = response.getBody();
         if (result != null) {
             obj.remove("password");
+            obj.remove("email");
+            obj.put("email", "doesnotexist@something.com");
             request = webb
                     .put("http://localhost:8000/deactivate")
                     .body(obj);
@@ -464,6 +465,8 @@ public class AuthServiceTest {
         JSONObject result = response.getBody();
         if (result != null) {
             obj.remove("password");
+            obj.remove("email");
+            obj.put("email", "doesnotexist@something.com");
             request = webb
                     .put("http://localhost:8000/activate")
                     .body(obj);
