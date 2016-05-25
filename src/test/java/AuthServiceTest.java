@@ -33,6 +33,7 @@ public class AuthServiceTest {
         }
         Connection connection = DriverManager.getConnection("jdbc:postgresql://" + host + ":" + port + "/Users?user=postgres");
         Statement statement = connection.createStatement();
+        String dropQuery = "DROP TABLE public.users;";
         String query = "CREATE TABLE public.users\n" +
                 "(\n" +
                 "  email character varying NOT NULL,\n" +
@@ -40,6 +41,7 @@ public class AuthServiceTest {
                 "  active boolean DEFAULT false,\n" +
                 "  CONSTRAINT users_pkey PRIMARY KEY (email)\n" +
                 ")";
+        statement.execute(dropQuery);
         statement.execute(query);
         statement.close();
         connection.close();
@@ -176,8 +178,7 @@ public class AuthServiceTest {
         if (result != null) {
             request = webb
                     .post("http://localhost:8000/create")
-                    .param("email", "test@test.com")
-                    .param("password", "password");
+                    .body(obj);
             response = request
                     .asJsonObject();
             result = new JSONObject(response.getErrorBody().toString());
