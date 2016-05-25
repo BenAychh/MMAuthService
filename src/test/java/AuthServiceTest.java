@@ -33,7 +33,7 @@ public class AuthServiceTest {
         }
         Connection connection = DriverManager.getConnection("jdbc:postgresql://" + host + ":" + port + "/Users?user=postgres");
         Statement statement = connection.createStatement();
-        String dropQuery = "DROP TABLE public.users;";
+        String dropQuery = "DROP TABLE IF EXISTS public.users;";
         String query = "CREATE TABLE public.users\n" +
                 "(\n" +
                 "  email character varying NOT NULL,\n" +
