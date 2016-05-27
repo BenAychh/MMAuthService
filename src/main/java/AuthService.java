@@ -175,7 +175,7 @@ public class AuthService {
                 response.type("application/json");
             } else if (resultSet.getBoolean(1) == true) {
                 object.put("status", 400);
-                object.put("message", "User is already active");
+                object.put("message", "Already activated");
                 response.status(400);
                 response.type("application/json");
             } else {
