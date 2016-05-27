@@ -443,9 +443,9 @@ public class AuthServiceTest {
             }
             JSONObject expected = new JSONObject();
             expected.put("message", "Already deactivated");
-            expected.put("status", 409);
+            expected.put("status", 400);
             JSONAssert.assertEquals(expected, result, true);
-            assertEquals(409, response.getStatusCode());
+            assertEquals(400, response.getStatusCode());
         } else {
             fail("Unable to even create the user");
         }

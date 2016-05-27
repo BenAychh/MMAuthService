@@ -185,7 +185,7 @@ public class AuthService {
                 preparedStatement.setString(2, email);
                 preparedStatement.execute();
                 object.put("status", 200);
-                object.put("message", "User's active status set to true");
+                object.put("message", "Account activated");
                 response.status(200);
                 response.type("application/json");
             }
@@ -213,7 +213,7 @@ public class AuthService {
                 response.type("application/json");
             } else if (resultSet.getBoolean(1) == false) {
                 object.put("status", 400);
-                object.put("message", "User is already inactive");
+                object.put("message", "Already deactivated");
                 response.status(400);
                 response.type("application/json");
             } else {
@@ -223,7 +223,7 @@ public class AuthService {
                 preparedStatement.setString(2, email);
                 preparedStatement.execute();
                 object.put("status", 200);
-                object.put("message", "User's active status set to false");
+                object.put("message", "Account deactivated");
                 response.status(200);
                 response.type("application/json");
             }
