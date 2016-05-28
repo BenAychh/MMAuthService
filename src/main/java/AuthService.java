@@ -3,6 +3,7 @@
  */
 
 import com.mchange.v2.c3p0.ComboPooledDataSource;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.SignatureException;
@@ -24,8 +25,8 @@ public class AuthService {
     private static ComboPooledDataSource cpds;
     public static void main(String args[]) {
         cpds = new ComboPooledDataSource();
-        String host = System.getenv("PG_PORT_5432_TCP_ADDR");
-        String port = System.getenv("PG_PORT_5432_TCP_PORT");
+        String host = System.getenv("AUTHPG_PORT_5432_TCP_ADDR");
+        String port = System.getenv("AUTHPG_PORT_5432_TCP_PORT");
         if (host == null) {
             host = "localhost";
         }
@@ -50,6 +51,7 @@ public class AuthService {
             JSONObject userInfo = new JSONObject(request.body());
             String email = userInfo.getString("email");
             String password = userInfo.getString("password");
+            boolean isTeacher = userInfo.getBoolean("isTeacher");
             password = BCrypt.hashpw(password, BCrypt.gensalt(10));
             Connection connection = cpds.getConnection();
             String query = "select email from users where email = ?;";
@@ -63,15 +65,16 @@ public class AuthService {
                 response.status(400);
                 response.type("application/json");
             } else {
-                query = "insert into users VALUES (?, ?, ?)";
+                query = "insert into users (email, password, active, is_teacher) VALUES (?, ?, ?, ?)";
                 preparedStatement = connection.prepareStatement(query);
                 preparedStatement.setString(1, email);
                 preparedStatement.setString(2, password);
                 preparedStatement.setBoolean(3, true);
+                preparedStatement.setBoolean(4, isTeacher);
                 preparedStatement.execute();
                 object.put("status", 201);
                 object.put("message", "User created");
-                object.put("token", createJWT(email));
+                object.put("token", createJWT(email, isTeacher));
                 response.status(201);
                 response.type("application/json");
             }
@@ -86,32 +89,29 @@ public class AuthService {
         public Object handle(Request request, Response response) throws Exception {
             JSONObject userInfo = new JSONObject(request.body());
             String email = userInfo.getString("email");
-            System.out.println(email);
             String password = userInfo.getString("password");
-            System.out.println(password);
             Connection connection = cpds.getConnection();
-            String query = "select email, password from users where email = ?;";
+            String query = "select email, password, is_teacher from users where email = ?;";
             PreparedStatement preparedStatement = connection.prepareStatement(query);
             preparedStatement.setString(1, email);
             ResultSet resultSet = preparedStatement.executeQuery();
-            System.out.println(resultSet);
             JSONObject object = new JSONObject();
             if (!resultSet.next()) {
                 object.put("status", 403);
-                object.put("message", "Bad username or password");
+                object.put("message", "Wrong email or password");
                 response.status(403);
                 response.type("application/json");
             } else {
                 String hashedPassword = resultSet.getString("password");
                 if (!BCrypt.checkpw(password, hashedPassword)) {
                     object.put("status", 403);
-                    object.put("message", "Bad username or password");
+                    object.put("message", "Wrong email or password");
                     response.status(403);
                     response.type("application/json");
                 } else {
                     object.put("status", 200);
                     object.put("message", "User found and password matches");
-                    object.put("token", createJWT(email));
+                    object.put("token", createJWT(email, resultSet.getBoolean("is_teacher")));
                     response.status(200);
                     response.type("application/json");
                 }
@@ -247,8 +247,18 @@ public class AuthService {
         }
     };
 
-    private static String createJWT(String email) {
+    private static String createJWT(String email, boolean isTeacher) {
         String key = "key goes here";
-        return Jwts.builder().setSubject(email).signWith(SignatureAlgorithm.HS512, key).compact();
+        JSONObject payload = new JSONObject();
+        payload.put("email", email);
+        payload.put("isTeacher", isTeacher);
+        String returner = "";
+        try {
+            returner = Jwts.builder().setPayload(payload.toString()).signWith(SignatureAlgorithm.HS512, key).compact();
+        } catch (Exception e) {
+            System.out.println(e);
+            returner = e.toString();
+        }
+        return returner;
     }
 }
