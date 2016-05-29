@@ -94,16 +94,16 @@ public class AuthService {
             ResultSet resultSet = preparedStatement.executeQuery();
             JSONObject object = new JSONObject();
             if (!resultSet.next()) {
-                object.put("status", 403);
+                object.put("status", 401);
                 object.put("message", "Wrong email or password");
-                response.status(403);
+                response.status(401);
                 response.type("application/json");
             } else {
                 String hashedPassword = resultSet.getString("password");
                 if (!BCrypt.checkpw(password, hashedPassword)) {
-                    object.put("status", 403);
+                    object.put("status", 401);
                     object.put("message", "Wrong email or password");
-                    response.status(403);
+                    response.status(401);
                     response.type("application/json");
                 } else {
                     object.put("status", 200);
@@ -175,9 +175,9 @@ public class AuthService {
                 response.status(403);
                 response.type("application/json");
             } else if (resultSet.getBoolean(1) == true) {
-                object.put("status", 400);
+                object.put("status", 403);
                 object.put("message", "Already activated");
-                response.status(400);
+                response.status(403);
                 response.type("application/json");
             } else {
                 query = "update users set active = ? where email = ?;";
@@ -213,9 +213,9 @@ public class AuthService {
                 response.status(403);
                 response.type("application/json");
             } else if (resultSet.getBoolean(1) == false) {
-                object.put("status", 400);
+                object.put("status", 403);
                 object.put("message", "Already deactivated");
-                response.status(400);
+                response.status(403);
                 response.type("application/json");
             } else {
                 query = "update users set active = ? where email = ?;";
