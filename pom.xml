@@ -30,11 +30,10 @@
             <artifactId>jbcrypt</artifactId>
             <version>0.3m</version>
         </dependency>
-        <!-- http://mvnrepository.com/artifact/io.jsonwebtoken/jjwt -->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt</artifactId>
-            <version>0.2</version>
+            <version>0.6.0</version>
         </dependency>
         <!-- http://mvnrepository.com/artifact/org.json/json -->
         <dependency>

@@ -3,17 +3,14 @@
  */
 
 import com.mchange.v2.c3p0.ComboPooledDataSource;
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.SignatureException;
 import org.json.JSONObject;
 import org.mindrot.jbcrypt.BCrypt;
 import spark.Request;
 import spark.Response;
 import spark.Route;
 
-import java.net.URLDecoder;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -74,7 +71,7 @@ public class AuthService {
                 preparedStatement.execute();
                 object.put("status", 201);
                 object.put("message", "User created");
-                object.put("token", createJWT(email, isTeacher));
+//                object.put("token", createJWT(email, isTeacher));
                 response.status(201);
                 response.type("application/json");
             }
@@ -111,7 +108,11 @@ public class AuthService {
                 } else {
                     object.put("status", 200);
                     object.put("message", "User found and password matches");
-                    object.put("token", createJWT(email, resultSet.getBoolean("is_teacher")));
+                    JSONObject tokenize = new JSONObject();
+                    tokenize.put("email", resultSet.getString("email"));
+                    tokenize.put("isTeacher", resultSet.getBoolean("is_teacher"));
+                    object.put("tokenize", tokenize);
+//                    object.put("token", createJWT(email, resultSet.getBoolean("is_teacher")));
                     response.status(200);
                     response.type("application/json");
                 }
@@ -248,13 +249,12 @@ public class AuthService {
     };
 
     private static String createJWT(String email, boolean isTeacher) {
-        String key = "key goes here";
         JSONObject payload = new JSONObject();
         payload.put("email", email);
         payload.put("isTeacher", isTeacher);
-        String returner = "";
+        String returner;
         try {
-            returner = Jwts.builder().setPayload(payload.toString()).signWith(SignatureAlgorithm.HS512, key).compact();
+            returner = Jwts.builder().setPayload(payload.toString()).signWith(SignatureAlgorithm.HS256, "shhhhh").compact();
         } catch (Exception e) {
             System.out.println(e);
             returner = e.toString();
