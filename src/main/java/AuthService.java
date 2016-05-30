@@ -90,7 +90,7 @@ public class AuthService {
             String email = userInfo.getString("email");
             String password = userInfo.getString("password");
             Connection connection = cpds.getConnection();
-            String query = "select email, password, is_teacher from users where email = ?;";
+            String query = "select email, password from users where email = ?;";
             PreparedStatement preparedStatement = connection.prepareStatement(query);
             preparedStatement.setString(1, email);
             ResultSet resultSet = preparedStatement.executeQuery();
