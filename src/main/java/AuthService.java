@@ -3,8 +3,7 @@
  */
 
 import com.mchange.v2.c3p0.ComboPooledDataSource;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import com.sun.tools.doclets.formats.html.SourceToHTMLConverter;
 import org.json.JSONObject;
 import org.mindrot.jbcrypt.BCrypt;
 import spark.Request;
@@ -30,7 +29,7 @@ public class AuthService {
         if (port == null) {
             port = "5432";
         }
-        cpds.setJdbcUrl("jdbc:postgresql://" + host + ":" + port + "/Users?user=postgres");
+        cpds.setJdbcUrl("jdbc:postgresql://" + host + ":" + port + "/Users");
         port(8000);
         post("/create", create);
         post("/login", login);
@@ -68,10 +67,13 @@ public class AuthService {
                 preparedStatement.setString(2, password);
                 preparedStatement.setBoolean(3, true);
                 preparedStatement.setBoolean(4, isTeacher);
-                preparedStatement.execute();
+                try {
+                    preparedStatement.execute();
+                } catch (Exception e) {
+                    System.out.println(e);
+                }
                 object.put("status", 201);
                 object.put("message", "User created");
-//                object.put("token", createJWT(email, isTeacher));
                 response.status(201);
                 response.type("application/json");
             }
@@ -108,11 +110,6 @@ public class AuthService {
                 } else {
                     object.put("status", 200);
                     object.put("message", "User found and password matches");
-                    JSONObject tokenize = new JSONObject();
-                    tokenize.put("email", resultSet.getString("email"));
-                    tokenize.put("isTeacher", resultSet.getBoolean("is_teacher"));
-                    object.put("tokenize", tokenize);
-//                    object.put("token", createJWT(email, resultSet.getBoolean("is_teacher")));
                     response.status(200);
                     response.type("application/json");
                 }
@@ -137,9 +134,9 @@ public class AuthService {
             ResultSet resultSet = preparedStatement.executeQuery();
             JSONObject object = new JSONObject();
             if (!resultSet.next()) {
-                object.put("status", 403);
+                object.put("status", 400);
                 object.put("message", "User does not exist");
-                response.status(403);
+                response.status(400);
                 response.type("application/json");
             } else {
                 query = "update users set password = ? where email = ?;";
@@ -170,14 +167,14 @@ public class AuthService {
             ResultSet resultSet = preparedStatement.executeQuery();
             JSONObject object = new JSONObject();
             if (!resultSet.next()) {
-                object.put("status", 403);
+                object.put("status", 400);
                 object.put("message", "User does not exist");
-                response.status(403);
+                response.status(400);
                 response.type("application/json");
             } else if (resultSet.getBoolean(1) == true) {
-                object.put("status", 403);
+                object.put("status", 400);
                 object.put("message", "Already activated");
-                response.status(403);
+                response.status(400);
                 response.type("application/json");
             } else {
                 query = "update users set active = ? where email = ?;";
@@ -208,14 +205,14 @@ public class AuthService {
             ResultSet resultSet = preparedStatement.executeQuery();
             JSONObject object = new JSONObject();
             if (!resultSet.next()) {
-                object.put("status", 403);
+                object.put("status", 400);
                 object.put("message", "User does not exist");
-                response.status(403);
+                response.status(400);
                 response.type("application/json");
             } else if (resultSet.getBoolean(1) == false) {
-                object.put("status", 403);
+                object.put("status", 400);
                 object.put("message", "Already deactivated");
-                response.status(403);
+                response.status(400);
                 response.type("application/json");
             } else {
                 query = "update users set active = ? where email = ?;";
@@ -247,18 +244,4 @@ public class AuthService {
             return res.toString();
         }
     };
-
-    private static String createJWT(String email, boolean isTeacher) {
-        JSONObject payload = new JSONObject();
-        payload.put("email", email);
-        payload.put("isTeacher", isTeacher);
-        String returner;
-        try {
-            returner = Jwts.builder().setPayload(payload.toString()).signWith(SignatureAlgorithm.HS256, "shhhhh").compact();
-        } catch (Exception e) {
-            System.out.println(e);
-            returner = e.toString();
-        }
-        return returner;
-    }
 }
