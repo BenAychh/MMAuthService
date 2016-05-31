@@ -61,7 +61,6 @@ public class AuthService {
                 object.put("status", 400);
                 object.put("message", "User already exists");
                 response.status(400);
-                response.type("application/json");
             } else {
                 query = "insert into users (email, password, active, is_teacher) VALUES (?, ?, ?, ?)";
                 preparedStatement = connection.prepareStatement(query);
@@ -77,11 +76,11 @@ public class AuthService {
                 object.put("status", 201);
                 object.put("message", "User created");
                 response.status(201);
-                response.type("application/json");
             }
             resultSet.close();
             preparedStatement.close();
             connection.close();
+            response.type("application/json");
             return object.toString();
         }
     };
@@ -92,7 +91,7 @@ public class AuthService {
             String email = userInfo.getString("email");
             String password = userInfo.getString("password");
             Connection connection = cpds.getConnection();
-            String query = "select email, password from users where email = ?;";
+            String query = "select email, password, is_teacher from users where email = ?;";
             PreparedStatement preparedStatement = connection.prepareStatement(query);
             preparedStatement.setString(1, email);
             ResultSet resultSet = preparedStatement.executeQuery();
@@ -101,19 +100,20 @@ public class AuthService {
                 object.put("status", 401);
                 object.put("message", "Wrong email or password");
                 response.status(401);
-                response.type("application/json");
             } else {
                 String hashedPassword = resultSet.getString("password");
                 if (!BCrypt.checkpw(password, hashedPassword)) {
                     object.put("status", 401);
                     object.put("message", "Wrong email or password");
                     response.status(401);
-                    response.type("application/json");
                 } else {
                     object.put("status", 200);
                     object.put("message", "User found and password matches");
+                    JSONObject tokenize = new JSONObject();
+                    tokenize.put("email", email);
+                    tokenize.put("isTeacher", resultSet.getBoolean("is_teacher"));
+                    object.put("tokenize", tokenize);
                     response.status(200);
-                    response.type("application/json");
                 }
             }
             resultSet.close();
@@ -154,12 +154,10 @@ public class AuthService {
                 object.put("status", 200);
                 object.put("message", "User password updated");
                 response.status(200);
-                response.type("application/json");
             }
             resultSet.close();
             preparedStatement.close();
             connection.close();
-            response.type("application/json");
             return object.toString();
         }
     };
