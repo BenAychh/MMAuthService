@@ -128,32 +128,36 @@ public class AuthService {
         public Object handle(Request request, Response response) throws Exception {
             JSONObject userInfo = new JSONObject(request.body());
             String email = userInfo.getString("email");
-            String password = userInfo.getString("password");
-            password = BCrypt.hashpw(password, BCrypt.gensalt(10));
+            String oldPassword = userInfo.getString("oldPassword");
+            String newPassword = userInfo.getString("newPassword");
             Connection connection = cpds.getConnection();
-            String query = "select email from users where email = ?;";
+            String query = "select email, password from users where email = ?;";
             PreparedStatement preparedStatement = connection.prepareStatement(query);
             preparedStatement.setString(1, email);
             ResultSet resultSet = preparedStatement.executeQuery();
             JSONObject object = new JSONObject();
             if (!resultSet.next()) {
-                object.put("status", 400);
+                object.put("status", 403);
                 object.put("message", "User does not exist");
-                response.status(400);
+                response.status(403);
                 response.type("application/json");
             } else {
-                query = "update users set password = ? where email = ?;";
-                preparedStatement = connection.prepareStatement(query);
-                preparedStatement.setString(1, password);
-                preparedStatement.setString(2, email);
-                try {
+                String hashedPassword = resultSet.getString("password");
+                if (BCrypt.checkpw(oldPassword, hashedPassword)) {
+                    query = "update users set password = ? where email = ?;";
+                    preparedStatement = connection.prepareStatement(query);
+                    preparedStatement.setString(1, newPassword);
+                    preparedStatement.setString(2, email);
                     preparedStatement.execute();
-                } catch (Exception e) {
-                    System.out.println(e);
+                    object.put("status", 200);
+                    object.put("message", "User password updated");
+                    response.status(200);
+                    response.type("application/json");
+                } else {
+                    response.status(401);
+                    object.put("message", "Old password incorrect");
+                    object.put("status", 401);
                 }
-                object.put("status", 200);
-                object.put("message", "User password updated");
-                response.status(200);
             }
             resultSet.close();
             preparedStatement.close();
