@@ -137,9 +137,9 @@ public class AuthService {
             ResultSet resultSet = preparedStatement.executeQuery();
             JSONObject object = new JSONObject();
             if (!resultSet.next()) {
-                object.put("status", 403);
+                object.put("status", 400);
                 object.put("message", "User does not exist");
-                response.status(403);
+                response.status(400);
                 response.type("application/json");
             } else {
                 String hashedPassword = resultSet.getString("password");

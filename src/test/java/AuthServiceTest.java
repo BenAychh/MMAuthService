@@ -218,7 +218,7 @@ public class AuthServiceTest {
             JSONObject expected = new JSONObject();
             expected.put("message", "User found and password matches");
             expected.put("status", 200);
-            JSONAssert.assertEquals(expected, result, true);
+            JSONAssert.assertEquals(expected, result, false);
             assertEquals(200, response.getStatusCode());
         } else {
             fail("Unable to even create the user");
@@ -293,7 +293,8 @@ public class AuthServiceTest {
         JSONObject result = response.getBody();
         if (result != null) {
             obj.remove("password");
-            obj.put("password", "newPassword");
+            obj.put("oldPassword", "password");
+            obj.put("newPassword", "newPassword");
             request = webb
                     .put("http://localhost:8000/update")
                     .body(obj);
@@ -329,6 +330,8 @@ public class AuthServiceTest {
         if (result != null) {
             obj.remove("email");
             obj.put("email", "doesnotexist@something.com");
+            obj.put("oldPassword", "password");
+            obj.put("newPassword", "newPassword");
             request = webb
                     .put("http://localhost:8000/update")
                     .body(obj);
