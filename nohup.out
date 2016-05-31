@@ -1,0 +1,22 @@
+27/May/2016 19:58:55,068- MLog: MLog clients using slf4j logging.
+27/May/2016 19:58:55,219- C3P0Registry: Initializing c3p0-0.9.5.2 [built 08-December-2015 22:06:04 -0800; debug? true; trace: 10]
+27/May/2016 19:58:55,440- log: Logging initialized @594ms
+27/May/2016 19:58:55,505- EmbeddedJettyServer: == Spark has ignited ...
+27/May/2016 19:58:55,505- EmbeddedJettyServer: >> Listening on 0.0.0.0:8000
+27/May/2016 19:58:55,511- Server: jetty-9.3.z-SNAPSHOT
+27/May/2016 19:58:55,564- EmbeddedJettyServer: ignite failed
+java.net.BindException: Address already in use
+	at sun.nio.ch.Net.bind0(Native Method)
+	at sun.nio.ch.Net.bind(Net.java:433)
+	at sun.nio.ch.Net.bind(Net.java:425)
+	at sun.nio.ch.ServerSocketChannelImpl.bind(ServerSocketChannelImpl.java:223)
+	at sun.nio.ch.ServerSocketAdaptor.bind(ServerSocketAdaptor.java:74)
+	at org.eclipse.jetty.server.ServerConnector.open(ServerConnector.java:326)
+	at org.eclipse.jetty.server.AbstractNetworkConnector.doStart(AbstractNetworkConnector.java:80)
+	at org.eclipse.jetty.server.ServerConnector.doStart(ServerConnector.java:244)
+	at org.eclipse.jetty.util.component.AbstractLifeCycle.start(AbstractLifeCycle.java:68)
+	at org.eclipse.jetty.server.Server.doStart(Server.java:384)
+	at org.eclipse.jetty.util.component.AbstractLifeCycle.start(AbstractLifeCycle.java:68)
+	at spark.embeddedserver.jetty.EmbeddedJettyServer.ignite(EmbeddedJettyServer.java:128)
+	at spark.Service.lambda$init$0(Service.java:349)
+	at java.lang.Thread.run(Thread.java:745)

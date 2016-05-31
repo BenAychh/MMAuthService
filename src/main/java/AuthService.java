@@ -31,7 +31,7 @@ public class AuthService {
         if (port == null) {
             port = "5432";
         }
-        cpds.setJdbcUrl("jdbc:postgresql://" + host + ":" + port + "/Users");
+        cpds.setJdbcUrl("jdbc:postgresql://" + host + ":" + port + "/Users?user=ec2-user");
         port(8000);
         post("/create", create);
         post("/login", login);
