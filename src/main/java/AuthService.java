@@ -14,6 +14,7 @@ import spark.Route;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 
 import static spark.Spark.*;
 
@@ -45,165 +46,197 @@ public class AuthService {
     }
 
     private static Route create = new Route() {
-        public Object handle(Request request, Response response) throws Exception {
+        public Object handle(Request request, Response response) {
             JSONObject userInfo = new JSONObject(request.body());
             String email = userInfo.getString("email");
             String password = userInfo.getString("password");
             boolean isTeacher = userInfo.getBoolean("isTeacher");
             password = BCrypt.hashpw(password, BCrypt.gensalt(10));
-            Connection connection = cpds.getConnection();
-            String query = "select email from users where email = ?;";
-            PreparedStatement preparedStatement = connection.prepareStatement(query);
-            preparedStatement.setString(1, email);
-            ResultSet resultSet = preparedStatement.executeQuery();
             JSONObject object = new JSONObject();
-            if (resultSet.next()) {
-                object.put("status", 400);
-                object.put("message", "User already exists");
-                response.status(400);
-            } else {
-                query = "insert into users (email, password, active, is_teacher) VALUES (?, ?, ?, ?)";
-                preparedStatement = connection.prepareStatement(query);
+            try {
+                Connection connection = cpds.getConnection();
+                String query = "select email from users where email = ?;";
+                PreparedStatement preparedStatement = connection.prepareStatement(query);
                 preparedStatement.setString(1, email);
-                preparedStatement.setString(2, password);
-                preparedStatement.setBoolean(3, true);
-                preparedStatement.setBoolean(4, isTeacher);
-                try {
-                    preparedStatement.execute();
-                } catch (Exception e) {
-                    System.out.println(e);
+                ResultSet resultSet = preparedStatement.executeQuery();
+
+                if (resultSet.next()) {
+                    object.put("status", 400);
+                    object.put("message", "User already exists");
+                    response.status(400);
+                } else {
+                    query = "insert into users (email, password, active, is_teacher) VALUES (?, ?, ?, ?)";
+                    preparedStatement = connection.prepareStatement(query);
+                    preparedStatement.setString(1, email);
+                    preparedStatement.setString(2, password);
+                    preparedStatement.setBoolean(3, true);
+                    preparedStatement.setBoolean(4, isTeacher);
+                    try {
+                        preparedStatement.execute();
+                    } catch (Exception e) {
+                        System.out.println(e);
+                    }
+                    object.put("status", 201);
+                    object.put("message", "User created");
+                    response.status(201);
                 }
-                object.put("status", 201);
-                object.put("message", "User created");
-                response.status(201);
+                resultSet.close();
+                preparedStatement.close();
+                connection.close();
+            } catch (SQLException e) {
+                response.status(500);
+                JSONObject catchObj = new JSONObject();
+                catchObj.put("error", e);
+                return catchObj;
             }
-            resultSet.close();
-            preparedStatement.close();
-            connection.close();
             response.type("application/json");
             return object.toString();
         }
     };
 
     private static Route login = new Route() {
-        public Object handle(Request request, Response response) throws Exception {
+        public Object handle(Request request, Response response) {
             JSONObject userInfo = new JSONObject(request.body());
             String email = userInfo.getString("email");
             String password = userInfo.getString("password");
-            Connection connection = cpds.getConnection();
-            String query = "select email, password, is_teacher from users where email = ?;";
-            PreparedStatement preparedStatement = connection.prepareStatement(query);
-            preparedStatement.setString(1, email);
-            ResultSet resultSet = preparedStatement.executeQuery();
             JSONObject object = new JSONObject();
-            if (!resultSet.next()) {
-                object.put("status", 401);
-                object.put("message", "Wrong email or password");
-                response.status(401);
-            } else {
-                String hashedPassword = resultSet.getString("password");
-                if (!BCrypt.checkpw(password, hashedPassword)) {
+            try {
+                Connection connection = cpds.getConnection();
+                String query = "select email, password, is_teacher from users where email = ?;";
+                PreparedStatement preparedStatement = connection.prepareStatement(query);
+                preparedStatement.setString(1, email);
+                ResultSet resultSet = preparedStatement.executeQuery();
+
+                if (!resultSet.next()) {
                     object.put("status", 401);
                     object.put("message", "Wrong email or password");
                     response.status(401);
                 } else {
-                    object.put("status", 200);
-                    object.put("message", "User found and password matches");
-                    JSONObject tokenize = new JSONObject();
-                    tokenize.put("email", email);
-                    tokenize.put("isTeacher", resultSet.getBoolean("is_teacher"));
-                    object.put("tokenize", tokenize);
-                    response.status(200);
+                    String hashedPassword = resultSet.getString("password");
+                    if (!BCrypt.checkpw(password, hashedPassword)) {
+                        object.put("status", 401);
+                        object.put("message", "Wrong email or password");
+                        response.status(401);
+                    } else {
+                        object.put("status", 200);
+                        object.put("message", "User found and password matches");
+                        JSONObject tokenize = new JSONObject();
+                        tokenize.put("email", email);
+                        tokenize.put("isTeacher", resultSet.getBoolean("is_teacher"));
+                        object.put("tokenize", tokenize);
+                        response.status(200);
+                    }
                 }
+                resultSet.close();
+                preparedStatement.close();
+                connection.close();
+            } catch (SQLException e) {
+                response.status(500);
+                JSONObject catchObj = new JSONObject();
+                catchObj.put("error", e);
+                return catchObj;
             }
-            resultSet.close();
-            preparedStatement.close();
-            connection.close();
             response.type("application/json");
             return object.toString();
         }
     };
 
     private static Route update = new Route() {
-        public Object handle(Request request, Response response) throws Exception {
+        public Object handle(Request request, Response response) {
             JSONObject userInfo = new JSONObject(request.body());
             String email = userInfo.getString("email");
             String oldPassword = userInfo.getString("oldPassword");
             String newPassword = userInfo.getString("newPassword");
-            Connection connection = cpds.getConnection();
-            String query = "select email, password from users where email = ?;";
-            PreparedStatement preparedStatement = connection.prepareStatement(query);
-            preparedStatement.setString(1, email);
-            ResultSet resultSet = preparedStatement.executeQuery();
             JSONObject object = new JSONObject();
-            if (!resultSet.next()) {
-                object.put("status", 400);
-                object.put("message", "User does not exist");
-                response.status(400);
-                response.type("application/json");
-            } else {
-                String hashedPassword = resultSet.getString("password");
-                if (BCrypt.checkpw(oldPassword, hashedPassword)) {
-                    query = "update users set password = ? where email = ?;";
-                    preparedStatement = connection.prepareStatement(query);
-                    preparedStatement.setString(1, newPassword);
-                    preparedStatement.setString(2, email);
-                    preparedStatement.execute();
-                    object.put("status", 200);
-                    object.put("message", "User password updated");
-                    response.status(200);
+            try {
+                Connection connection = cpds.getConnection();
+                String query = "select email, password from users where email = ?;";
+                PreparedStatement preparedStatement = connection.prepareStatement(query);
+                preparedStatement.setString(1, email);
+                ResultSet resultSet = preparedStatement.executeQuery();
+                if (!resultSet.next()) {
+                    object.put("status", 400);
+                    object.put("message", "User does not exist");
+                    response.status(400);
                     response.type("application/json");
                 } else {
-                    response.status(401);
-                    object.put("message", "Old password incorrect");
-                    object.put("status", 401);
+                    String hashedPassword = resultSet.getString("password");
+                    if (BCrypt.checkpw(oldPassword, hashedPassword)) {
+                        query = "update users set password = ? where email = ?;";
+                        preparedStatement = connection.prepareStatement(query);
+                        preparedStatement.setString(1, newPassword);
+                        preparedStatement.setString(2, email);
+                        preparedStatement.execute();
+                        object.put("status", 200);
+                        object.put("message", "User password updated");
+                        response.status(200);
+                        response.type("application/json");
+                    } else {
+                        response.status(401);
+                        object.put("message", "Old password incorrect");
+                        object.put("status", 401);
+                    }
                 }
+                resultSet.close();
+                preparedStatement.close();
+                connection.close();
+            } catch (SQLException e) {
+                response.status(500);
+                JSONObject catchObj = new JSONObject();
+                catchObj.put("error", e);
+                return catchObj;
             }
-            resultSet.close();
-            preparedStatement.close();
-            connection.close();
-            return object.toString();
+            response.type("application/json");
+            return object;
         }
     };
 
     private static Route activate = new Route() {
-        public Object handle(Request request, Response response) throws Exception {
+        public Object handle(Request request, Response response) {
             JSONObject userInfo = new JSONObject(request.body());
             String email = userInfo.getString("email");
-            Connection connection = cpds.getConnection();
-            String query = "select active from users where email = ?;";
-            PreparedStatement preparedStatement = connection.prepareStatement(query);
-            preparedStatement.setString(1, email);
-            ResultSet resultSet = preparedStatement.executeQuery();
             JSONObject object = new JSONObject();
-            if (!resultSet.next()) {
-                object.put("status", 400);
-                object.put("message", "User does not exist");
-                response.status(400);
-                response.type("application/json");
-            } else if (resultSet.getBoolean(1) == true) {
-                object.put("status", 400);
-                object.put("message", "Already activated");
-                response.status(400);
-                response.type("application/json");
-            } else {
-                query = "update users set active = ? where email = ?;";
-                preparedStatement = connection.prepareStatement(query);
-                preparedStatement.setBoolean(1, true);
-                preparedStatement.setString(2, email);
-                try {
-                    preparedStatement.execute();
-                } catch (Exception e) {
-                    System.out.println(e);
+            try {
+                Connection connection = cpds.getConnection();
+                String query = "select active from users where email = ?;";
+                PreparedStatement preparedStatement = connection.prepareStatement(query);
+                preparedStatement.setString(1, email);
+                ResultSet resultSet = preparedStatement.executeQuery();
+
+                if (!resultSet.next()) {
+                    object.put("status", 400);
+                    object.put("message", "User does not exist");
+                    response.status(400);
+                    response.type("application/json");
+                } else if (resultSet.getBoolean(1) == true) {
+                    object.put("status", 400);
+                    object.put("message", "Already activated");
+                    response.status(400);
+                    response.type("application/json");
+                } else {
+                    query = "update users set active = ? where email = ?;";
+                    preparedStatement = connection.prepareStatement(query);
+                    preparedStatement.setBoolean(1, true);
+                    preparedStatement.setString(2, email);
+                    try {
+                        preparedStatement.execute();
+                    } catch (Exception e) {
+                        System.out.println(e);
+                    }
+                    object.put("status", 200);
+                    object.put("message", "Account activated");
+                    response.status(200);
+                    response.type("application/json");
                 }
-                object.put("status", 200);
-                object.put("message", "Account activated");
-                response.status(200);
-                response.type("application/json");
+                resultSet.close();
+                preparedStatement.close();
+                connection.close();
+            } catch (SQLException e) {
+                response.status(500);
+                JSONObject catchObj = new JSONObject();
+                catchObj.put("error", e);
+                return catchObj;
             }
-            resultSet.close();
-            preparedStatement.close();
-            connection.close();
             response.type("application/json");
             return object.toString();
         }
@@ -211,23 +244,30 @@ public class AuthService {
 
     private static Route isTeacher = new Route() {
         @Override
-        public Object handle(Request request, Response response) throws Exception {
-            Connection connection = cpds.getConnection();
-            String query = "select is_teacher from Users where email=?";
-            PreparedStatement preparedStatement = connection.prepareStatement(query);
-            preparedStatement.setString(1, request.queryParams("email"));
-            ResultSet resultSet = preparedStatement.executeQuery();
+        public Object handle(Request request, Response response) {
             JSONObject returner = new JSONObject();
-            if (resultSet.next()) {
-                response.status(200);
-                returner.put("isTeacher", resultSet.getBoolean("is_teacher"));
-            } else {
-                response.status(400);
-                returner.put("error", "Not found");
+            try {
+                Connection connection = cpds.getConnection();
+                String query = "select is_teacher from Users where email=?";
+                PreparedStatement preparedStatement = connection.prepareStatement(query);
+                preparedStatement.setString(1, request.queryParams("email"));
+                ResultSet resultSet = preparedStatement.executeQuery();
+                if (resultSet.next()) {
+                    response.status(200);
+                    returner.put("isTeacher", resultSet.getBoolean("is_teacher"));
+                } else {
+                    response.status(400);
+                    returner.put("error", "Not found");
+                }
+                resultSet.close();
+                preparedStatement.close();
+                connection.close();
+            } catch (SQLException e) {
+                response.status(500);
+                JSONObject catchObj = new JSONObject();
+                catchObj.put("error", e);
+                return catchObj;
             }
-            resultSet.close();
-            preparedStatement.close();
-            connection.close();
             response.type("application/json");
             return returner;
         }
@@ -237,40 +277,47 @@ public class AuthService {
         public Object handle(Request request, Response response) throws Exception {
             JSONObject userInfo = new JSONObject(request.body());
             String email = userInfo.getString("email");
-            Connection connection = cpds.getConnection();
-            String query = "select active from users where email = ?;";
-            PreparedStatement preparedStatement = connection.prepareStatement(query);
-            preparedStatement.setString(1, email);
-            ResultSet resultSet = preparedStatement.executeQuery();
             JSONObject object = new JSONObject();
-            if (!resultSet.next()) {
-                object.put("status", 400);
-                object.put("message", "User does not exist");
-                response.status(400);
-                response.type("application/json");
-            } else if (resultSet.getBoolean(1) == false) {
-                object.put("status", 400);
-                object.put("message", "Already deactivated");
-                response.status(400);
-                response.type("application/json");
-            } else {
-                query = "update users set active = ? where email = ?;";
-                preparedStatement = connection.prepareStatement(query);
-                preparedStatement.setBoolean(1, false);
-                preparedStatement.setString(2, email);
-                try {
-                    preparedStatement.execute();
-                } catch (Exception e) {
-                    System.out.println(e);
+            try {
+                Connection connection = cpds.getConnection();
+                String query = "select active from users where email = ?;";
+                PreparedStatement preparedStatement = connection.prepareStatement(query);
+                preparedStatement.setString(1, email);
+                ResultSet resultSet = preparedStatement.executeQuery();
+                if (!resultSet.next()) {
+                    object.put("status", 400);
+                    object.put("message", "User does not exist");
+                    response.status(400);
+                    response.type("application/json");
+                } else if (resultSet.getBoolean(1) == false) {
+                    object.put("status", 400);
+                    object.put("message", "Already deactivated");
+                    response.status(400);
+                    response.type("application/json");
+                } else {
+                    query = "update users set active = ? where email = ?;";
+                    preparedStatement = connection.prepareStatement(query);
+                    preparedStatement.setBoolean(1, false);
+                    preparedStatement.setString(2, email);
+                    try {
+                        preparedStatement.execute();
+                    } catch (Exception e) {
+                        System.out.println(e);
+                    }
+                    object.put("status", 200);
+                    object.put("message", "Account deactivated");
+                    response.status(200);
+                    response.type("application/json");
                 }
-                object.put("status", 200);
-                object.put("message", "Account deactivated");
-                response.status(200);
-                response.type("application/json");
+                resultSet.close();
+                preparedStatement.close();
+                connection.close();
+            } catch (SQLException e) {
+                response.status(500);
+                JSONObject catchObj = new JSONObject();
+                catchObj.put("error", e);
+                return catchObj;
             }
-            resultSet.close();
-            preparedStatement.close();
-            connection.close();
             response.type("application/json");
             return object.toString();
         }
