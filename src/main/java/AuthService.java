@@ -4,8 +4,6 @@
 
 import com.google.gson.Gson;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import org.json.JSONObject;
 import org.mindrot.jbcrypt.BCrypt;
 import spark.Request;
@@ -32,7 +30,7 @@ public class AuthService {
         if (port == null) {
             port = "5432";
         }
-        cpds.setJdbcUrl("jdbc:postgresql://" + host + ":" + port + "/Users?user=postgres");
+        cpds.setJdbcUrl("jdbc:postgresql://" + host + ":" + port + "/Users");
         port(8000);
         post("/create", create);
         post("/login", login);
@@ -71,10 +69,13 @@ public class AuthService {
                 preparedStatement.setString(2, password);
                 preparedStatement.setBoolean(3, true);
                 preparedStatement.setBoolean(4, isTeacher);
-                preparedStatement.execute();
+                try {
+                    preparedStatement.execute();
+                } catch (Exception e) {
+                    System.out.println(e);
+                }
                 object.put("status", 201);
                 object.put("message", "User created");
-//                object.put("token", createJWT(email, isTeacher));
                 response.status(201);
                 response.type("application/json");
             }
@@ -91,7 +92,7 @@ public class AuthService {
             String email = userInfo.getString("email");
             String password = userInfo.getString("password");
             Connection connection = cpds.getConnection();
-            String query = "select email, password, is_teacher from users where email = ?;";
+            String query = "select email, password from users where email = ?;";
             PreparedStatement preparedStatement = connection.prepareStatement(query);
             preparedStatement.setString(1, email);
             ResultSet resultSet = preparedStatement.executeQuery();
@@ -111,11 +112,6 @@ public class AuthService {
                 } else {
                     object.put("status", 200);
                     object.put("message", "User found and password matches");
-                    JSONObject tokenize = new JSONObject();
-                    tokenize.put("email", resultSet.getString("email"));
-                    tokenize.put("isTeacher", resultSet.getBoolean("is_teacher"));
-                    object.put("tokenize", tokenize);
-//                    object.put("token", createJWT(email, resultSet.getBoolean("is_teacher")));
                     response.status(200);
                     response.type("application/json");
                 }
@@ -132,36 +128,33 @@ public class AuthService {
         public Object handle(Request request, Response response) throws Exception {
             JSONObject userInfo = new JSONObject(request.body());
             String email = userInfo.getString("email");
-            String oldPassword = userInfo.getString("oldPassword");
-            String newPassword = userInfo.getString("newPassword");
+            String password = userInfo.getString("password");
+            password = BCrypt.hashpw(password, BCrypt.gensalt(10));
             Connection connection = cpds.getConnection();
-            String query = "select email, password from users where email = ?;";
+            String query = "select email from users where email = ?;";
             PreparedStatement preparedStatement = connection.prepareStatement(query);
             preparedStatement.setString(1, email);
             ResultSet resultSet = preparedStatement.executeQuery();
             JSONObject object = new JSONObject();
             if (!resultSet.next()) {
-                object.put("status", 403);
+                object.put("status", 400);
                 object.put("message", "User does not exist");
-                response.status(403);
+                response.status(400);
                 response.type("application/json");
             } else {
-                String hashedPassword = resultSet.getString("password");
-                if (BCrypt.checkpw(oldPassword, hashedPassword)) {
-                    query = "update users set password = ? where email = ?;";
-                    preparedStatement = connection.prepareStatement(query);
-                    preparedStatement.setString(1, newPassword);
-                    preparedStatement.setString(2, email);
+                query = "update users set password = ? where email = ?;";
+                preparedStatement = connection.prepareStatement(query);
+                preparedStatement.setString(1, password);
+                preparedStatement.setString(2, email);
+                try {
                     preparedStatement.execute();
-                    object.put("status", 200);
-                    object.put("message", "User password updated");
-                    response.status(200);
-                    response.type("application/json");
-                } else {
-                    response.status(401);
-                    object.put("message", "Old password incorrect");
-                    object.put("status", 401);
+                } catch (Exception e) {
+                    System.out.println(e);
                 }
+                object.put("status", 200);
+                object.put("message", "User password updated");
+                response.status(200);
+                response.type("application/json");
             }
             resultSet.close();
             preparedStatement.close();
@@ -182,21 +175,25 @@ public class AuthService {
             ResultSet resultSet = preparedStatement.executeQuery();
             JSONObject object = new JSONObject();
             if (!resultSet.next()) {
-                object.put("status", 403);
+                object.put("status", 400);
                 object.put("message", "User does not exist");
-                response.status(403);
+                response.status(400);
                 response.type("application/json");
             } else if (resultSet.getBoolean(1) == true) {
-                object.put("status", 403);
+                object.put("status", 400);
                 object.put("message", "Already activated");
-                response.status(403);
+                response.status(400);
                 response.type("application/json");
             } else {
                 query = "update users set active = ? where email = ?;";
                 preparedStatement = connection.prepareStatement(query);
                 preparedStatement.setBoolean(1, true);
                 preparedStatement.setString(2, email);
-                preparedStatement.execute();
+                try {
+                    preparedStatement.execute();
+                } catch (Exception e) {
+                    System.out.println(e);
+                }
                 object.put("status", 200);
                 object.put("message", "Account activated");
                 response.status(200);
@@ -245,21 +242,25 @@ public class AuthService {
             ResultSet resultSet = preparedStatement.executeQuery();
             JSONObject object = new JSONObject();
             if (!resultSet.next()) {
-                object.put("status", 403);
+                object.put("status", 400);
                 object.put("message", "User does not exist");
-                response.status(403);
+                response.status(400);
                 response.type("application/json");
             } else if (resultSet.getBoolean(1) == false) {
-                object.put("status", 403);
+                object.put("status", 400);
                 object.put("message", "Already deactivated");
-                response.status(403);
+                response.status(400);
                 response.type("application/json");
             } else {
                 query = "update users set active = ? where email = ?;";
                 preparedStatement = connection.prepareStatement(query);
                 preparedStatement.setBoolean(1, false);
                 preparedStatement.setString(2, email);
-                preparedStatement.execute();
+                try {
+                    preparedStatement.execute();
+                } catch (Exception e) {
+                    System.out.println(e);
+                }
                 object.put("status", 200);
                 object.put("message", "Account deactivated");
                 response.status(200);
@@ -287,19 +288,19 @@ public class AuthService {
         }
     };
 
-    private static String createJWT(String email, boolean isTeacher) {
-        JSONObject payload = new JSONObject();
-        payload.put("email", email);
-        payload.put("isTeacher", isTeacher);
-        String returner;
-        try {
-            returner = Jwts.builder().setPayload(payload.toString()).signWith(SignatureAlgorithm.HS256, "shhhhh").compact();
-        } catch (Exception e) {
-            System.out.println(e);
-            returner = e.toString();
-        }
-        return returner;
-    }
+//    private static String createJWT(String email, boolean isTeacher) {
+//        JSONObject payload = new JSONObject();
+//        payload.put("email", email);
+//        payload.put("isTeacher", isTeacher);
+//        String returner;
+//        try {
+//            returner = Jwts.builder().setPayload(payload.toString()).signWith(SignatureAlgorithm.HS256, "shhhhh").compact();
+//        } catch (Exception e) {
+//            System.out.println(e);
+//            returner = e.toString();
+//        }
+//        return returner;
+//    }
     public class JsonTransformer implements ResponseTransformer {
 
         private Gson gson = new Gson();
