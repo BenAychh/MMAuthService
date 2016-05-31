@@ -2,6 +2,7 @@
  * Created by benhernandez on 5/21/16.
  */
 
+import com.google.gson.Gson;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -9,6 +10,7 @@ import org.json.JSONObject;
 import org.mindrot.jbcrypt.BCrypt;
 import spark.Request;
 import spark.Response;
+import spark.ResponseTransformer;
 import spark.Route;
 
 import java.sql.Connection;
@@ -37,6 +39,7 @@ public class AuthService {
         put("/update", update);
         put("/deactivate", deactivate);
         put("/activate", activate);
+        get("/isteacher", isTeacher);
         get("*", error);
         post("*", error);
         put("*", error);
@@ -120,6 +123,7 @@ public class AuthService {
             resultSet.close();
             preparedStatement.close();
             connection.close();
+            response.type("application/json");
             return object.toString();
         }
     };
@@ -162,6 +166,7 @@ public class AuthService {
             resultSet.close();
             preparedStatement.close();
             connection.close();
+            response.type("application/json");
             return object.toString();
         }
     };
@@ -200,7 +205,32 @@ public class AuthService {
             resultSet.close();
             preparedStatement.close();
             connection.close();
+            response.type("application/json");
             return object.toString();
+        }
+    };
+
+    private static Route isTeacher = new Route() {
+        @Override
+        public Object handle(Request request, Response response) throws Exception {
+            Connection connection = cpds.getConnection();
+            String query = "select is_teacher from Users where email=?";
+            PreparedStatement preparedStatement = connection.prepareStatement(query);
+            preparedStatement.setString(1, request.queryParams("email"));
+            ResultSet resultSet = preparedStatement.executeQuery();
+            JSONObject returner = new JSONObject();
+            if (resultSet.next()) {
+                response.status(200);
+                returner.put("isTeacher", resultSet.getBoolean("is_teacher"));
+            } else {
+                response.status(400);
+                returner.put("error", "Not found");
+            }
+            resultSet.close();
+            preparedStatement.close();
+            connection.close();
+            response.type("application/json");
+            return returner;
         }
     };
 
@@ -238,6 +268,7 @@ public class AuthService {
             resultSet.close();
             preparedStatement.close();
             connection.close();
+            response.type("application/json");
             return object.toString();
         }
     };
@@ -251,6 +282,7 @@ public class AuthService {
             res.put("requested resource", request.pathInfo());
             res.put("requested method", request.requestMethod());
             response.status(404);
+            response.type("application/json");
             return res.toString();
         }
     };
@@ -267,5 +299,15 @@ public class AuthService {
             returner = e.toString();
         }
         return returner;
+    }
+    public class JsonTransformer implements ResponseTransformer {
+
+        private Gson gson = new Gson();
+
+        @Override
+        public String render(Object model) {
+            return gson.toJson(model);
+        }
+
     }
 }

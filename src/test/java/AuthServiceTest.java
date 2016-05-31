@@ -158,7 +158,6 @@ public class AuthServiceTest {
         JSONObject expected = new JSONObject();
         expected.put("message", "User created");
         expected.put("status", 201);
-        expected.put("token", "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0ZXN0QHRlc3QuY29tIn0.egbaJ7yWUvC4mU_C7LNJi24cPNpfx3rlr7woWn9pqsGX6LrGCK2Rf2LaD2cFiJ4AWC93QDMChuCmUM4YtDjzAw");
         JSONAssert.assertEquals(expected, result, true);
         assertEquals(201, response.getStatusCode());
     }
