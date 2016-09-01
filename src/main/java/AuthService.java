@@ -22,16 +22,9 @@ public class AuthService {
 
     private static ComboPooledDataSource cpds;
     public static void main(String args[]) {
+        String databaseUrl = System.getenv("DATABASE_URL");
         cpds = new ComboPooledDataSource();
-        String host = System.getenv("AUTHPG_PORT_5432_TCP_ADDR");
-        String port = System.getenv("AUTHPG_PORT_5432_TCP_PORT");
-        if (host == null) {
-            host = "localhost";
-        }
-        if (port == null) {
-            port = "5432";
-        }
-        cpds.setJdbcUrl("jdbc:postgresql://" + host + ":" + port + "/Users?user=ec2-user");
+        cpds.setJdbcUrl(databaseUrl);
         port(8000);
         post("/create", create);
         post("/login", login);
