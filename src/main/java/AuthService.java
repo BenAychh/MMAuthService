@@ -330,19 +330,6 @@ public class AuthService {
         }
     };
 
-//    private static String createJWT(String email, boolean isTeacher) {
-//        JSONObject payload = new JSONObject();
-//        payload.put("email", email);
-//        payload.put("isTeacher", isTeacher);
-//        String returner;
-//        try {
-//            returner = Jwts.builder().setPayload(payload.toString()).signWith(SignatureAlgorithm.HS256, "shhhhh").compact();
-//        } catch (Exception e) {
-//            System.out.println(e);
-//            returner = e.toString();
-//        }
-//        return returner;
-//    }
     public class JsonTransformer implements ResponseTransformer {
 
         private Gson gson = new Gson();
