@@ -55,7 +55,7 @@ public class AuthService {
 
                 if (resultSet.next()) {
                     object.put("status", 400);
-                    object.put("message", "User already exists");
+                    object.put("message", "user already exists");
                     response.status(400);
                 } else {
                     query = "insert into users (email, password, active, is_teacher) VALUES (?, ?, ?, ?)";
@@ -70,7 +70,7 @@ public class AuthService {
                         System.out.println(e);
                     }
                     object.put("status", 201);
-                    object.put("message", "User created");
+                    object.put("message", "user created");
                     response.status(201);
                 }
                 resultSet.close();
@@ -102,17 +102,17 @@ public class AuthService {
 
                 if (!resultSet.next()) {
                     object.put("status", 401);
-                    object.put("message", "Wrong email or password");
+                    object.put("message", "wrong email or password");
                     response.status(401);
                 } else {
                     String hashedPassword = resultSet.getString("password");
                     if (!BCrypt.checkpw(password, hashedPassword)) {
                         object.put("status", 401);
-                        object.put("message", "Wrong email or password");
+                        object.put("message", "wrong email or password");
                         response.status(401);
                     } else {
                         object.put("status", 200);
-                        object.put("message", "User found and password matches");
+                        object.put("message", "user found and password matches");
                         JSONObject tokenize = new JSONObject();
                         tokenize.put("email", email);
                         tokenize.put("isTeacher", resultSet.getBoolean("is_teacher"));
@@ -149,7 +149,7 @@ public class AuthService {
                 ResultSet resultSet = preparedStatement.executeQuery();
                 if (!resultSet.next()) {
                     object.put("status", 400);
-                    object.put("message", "User does not exist");
+                    object.put("message", "user does not exist");
                     response.status(400);
                     response.type("application/json");
                 } else {
@@ -161,12 +161,12 @@ public class AuthService {
                         preparedStatement.setString(2, email);
                         preparedStatement.execute();
                         object.put("status", 200);
-                        object.put("message", "User password updated");
+                        object.put("message", "user password updated");
                         response.status(200);
                         response.type("application/json");
                     } else {
                         response.status(401);
-                        object.put("message", "Old password incorrect");
+                        object.put("message", "old password incorrect");
                         object.put("status", 401);
                     }
                 }
@@ -198,12 +198,12 @@ public class AuthService {
 
                 if (!resultSet.next()) {
                     object.put("status", 400);
-                    object.put("message", "User does not exist");
+                    object.put("message", "user does not exist");
                     response.status(400);
                     response.type("application/json");
                 } else if (resultSet.getBoolean(1) == true) {
                     object.put("status", 400);
-                    object.put("message", "Already activated");
+                    object.put("message", "already activated");
                     response.status(400);
                     response.type("application/json");
                 } else {
@@ -217,7 +217,7 @@ public class AuthService {
                         System.out.println(e);
                     }
                     object.put("status", 200);
-                    object.put("message", "Account activated");
+                    object.put("message", "account activated");
                     response.status(200);
                     response.type("application/json");
                 }
@@ -250,7 +250,7 @@ public class AuthService {
                     returner.put("isTeacher", resultSet.getBoolean("is_teacher"));
                 } else {
                     response.status(400);
-                    returner.put("error", "Not found");
+                    returner.put("error", "user not found");
                 }
                 resultSet.close();
                 preparedStatement.close();
@@ -279,12 +279,12 @@ public class AuthService {
                 ResultSet resultSet = preparedStatement.executeQuery();
                 if (!resultSet.next()) {
                     object.put("status", 400);
-                    object.put("message", "User does not exist");
+                    object.put("message", "user does not exist");
                     response.status(400);
                     response.type("application/json");
                 } else if (resultSet.getBoolean(1) == false) {
                     object.put("status", 400);
-                    object.put("message", "Already deactivated");
+                    object.put("message", "already deactivated");
                     response.status(400);
                     response.type("application/json");
                 } else {
@@ -298,7 +298,7 @@ public class AuthService {
                         System.out.println(e);
                     }
                     object.put("status", 200);
-                    object.put("message", "Account deactivated");
+                    object.put("message", "account deactivated");
                     response.status(200);
                     response.type("application/json");
                 }
